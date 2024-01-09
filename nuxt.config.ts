@@ -9,8 +9,12 @@ export default defineNuxtConfig({
   ],
   css: ['~/assets/scss/app.scss'],
   modules: [
-    '@nuxtjs/eslint-module'
+    '@nuxtjs/eslint-module',
+    'nuxt-gtag'
   ],
+  gtag: {
+    id: 'G-R2TWYZL9MC'
+  },
   eslint: {
     lintOnStart: false
   },
