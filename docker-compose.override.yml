@@ -1,0 +1,6 @@
+version: "3.8"
+services:
+  dashboard:
+    ports:
+      - "${DOCKER_NODEJS_PORT:-3000}:3000"
+      - "${DOCKER_NODEJS_HMR_PORT-24678}:24678"

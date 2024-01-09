@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  dashboard:
+    container_name: ${DOCKER_NAME}
+    build: ./docker/images/node
+    hostname: "${DOCKER_NAME}"
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www
+    user: "node"
+    environment:
+      HOST: 0.0.0.0
+    networks:
+      - default-network
+networks:
+  default-network:
+    name: "gmt-network"
+    driver: bridge
