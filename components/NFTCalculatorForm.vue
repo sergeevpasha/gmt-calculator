@@ -8,6 +8,17 @@ defineComponent({
   name: 'NFTCalculatorForm'
 })
 
+const props = defineProps({
+  btcPrice: {
+    type: Number,
+    default: 0
+  },
+  reward: {
+    type: Number,
+    default: 0
+  }
+})
+
 const { nftProfitCalculator } = useInvest()
 
 const baseEfficiency = ref(50)
@@ -16,8 +27,6 @@ const selectedNftPower = ref(1)
 const nftEfficiency = ref(50)
 const nftPower = ref(0)
 const nftUserDiscount = ref(10)
-const btcPrice = ref(44000)
-const todayReward = ref(195)
 
 const potentialReward = ref(0)
 const potentialProfit = ref(0)
@@ -28,7 +37,7 @@ const powerCostUpgrade = ref(0)
 const potentialRateOfInvestment = ref(0)
 
 function calculateNft () {
-  const { powerCostC1, serviceCostC2, reward, profit, efficiencyCost, powerCost, rateOfInvestment } = nftProfitCalculator(selectedNftEfficiency.value, selectedNftPower.value, nftUserDiscount.value, todayReward.value, btcPrice.value, baseEfficiency.value)
+  const { powerCostC1, serviceCostC2, reward, profit, efficiencyCost, powerCost, rateOfInvestment } = nftProfitCalculator(selectedNftEfficiency.value, selectedNftPower.value, nftUserDiscount.value, props.reward, props.btcPrice, baseEfficiency.value)
   powerC1Cost.value = powerCostC1
   serviceC2Cost.value = serviceCostC2
   efficiencyCostUpgrade.value = efficiencyCost
@@ -41,7 +50,7 @@ function calculateNft () {
 }
 
 function convertSatoshiToUsd (satoshi: number) {
-  return parseFloat((satoshi / 100000000 * btcPrice.value).toFixed(2))
+  return parseFloat((satoshi / 100000000 * props.btcPrice).toFixed(2))
 }
 </script>
 <template>

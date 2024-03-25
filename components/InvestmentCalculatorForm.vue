@@ -8,11 +8,20 @@ defineComponent({
   name: 'InvestmentCalculatorForm'
 })
 
+const props = defineProps({
+  btcPrice: {
+    type: Number,
+    default: 0
+  },
+  reward: {
+    type: Number,
+    default: 0
+  }
+})
+
 const { bestOption } = useInvest()
 
 const moneyToSpend = ref(1000)
-const btcPrice = ref(44000)
-const todayReward = ref(195)
 const userDiscount = ref(10)
 
 const baseEfficiency = ref(50)
@@ -27,7 +36,7 @@ const powerCostUpgrade = ref(0)
 const potentialRateOfInvestment = ref(0)
 
 function calculate () {
-  const { powerCostC1, serviceCostC2, power, powerCost, efficiency, efficiencyCost, reward, profit, rateOfInvestment } = bestOption(moneyToSpend.value, btcPrice.value, todayReward.value, userDiscount.value, baseEfficiency.value)
+  const { powerCostC1, serviceCostC2, power, powerCost, efficiency, efficiencyCost, reward, profit, rateOfInvestment } = bestOption(moneyToSpend.value, props.btcPrice, props.reward, userDiscount.value, baseEfficiency.value)
   powerCostUpgrade.value = powerCost
   efficiencyCostUpgrade.value = efficiencyCost
   powerC1Cost.value = powerCostC1
@@ -40,7 +49,7 @@ function calculate () {
 }
 
 function convertSatoshiToUsd (satoshi: number) {
-  return parseFloat((satoshi / 100000000 * btcPrice.value).toFixed(2))
+  return parseFloat((satoshi / 100000000 * props.btcPrice).toFixed(2))
 }
 </script>
 <template>
