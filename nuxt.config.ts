@@ -3,14 +3,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true }.enabled,
   app: {
     head: {
-      title: 'GMT Calculator',
+      title: 'Gomining calculator',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         {
           hid: 'description',
           name: 'description',
-          content: process.env.npm_package_description || ''
+          content: 'Easy to use calculator to estimate the profitability of mining Bitcoin with gmt.io'
         }
       ],
       link: [
