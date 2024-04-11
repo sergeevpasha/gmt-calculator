@@ -2,7 +2,7 @@
 import BaseInput from '~/components/forms/BaseInput.vue'
 
 const btcPrice = ref(0)
-const reward = ref(152)
+const reward = ref(160)
 
 interface CoingeckoResponse {
   bitcoin: {
