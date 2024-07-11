@@ -21,8 +21,8 @@ const props = defineProps({
 
 const { nftProfitCalculator } = useInvest()
 
-const baseEfficiency = ref(50)
-const selectedNftEfficiency = ref(50)
+const baseEfficiency = ref(35)
+const selectedNftEfficiency = ref(35)
 const selectedNftPower = ref(1)
 const nftEfficiency = ref(50)
 const nftPower = ref(0)
@@ -37,7 +37,15 @@ const powerCostUpgrade = ref(0)
 const potentialRateOfInvestment = ref(0)
 
 function calculateNft () {
-  const { powerCostC1, serviceCostC2, reward, profit, efficiencyCost, powerCost, rateOfInvestment } = nftProfitCalculator(selectedNftEfficiency.value, selectedNftPower.value, nftUserDiscount.value, props.reward, props.btcPrice, baseEfficiency.value)
+  const {
+    powerCostC1,
+    serviceCostC2,
+    reward,
+    profit,
+    efficiencyCost,
+    powerCost,
+    rateOfInvestment
+  } = nftProfitCalculator(selectedNftEfficiency.value, selectedNftPower.value, nftUserDiscount.value, props.reward, props.btcPrice, baseEfficiency.value)
   powerC1Cost.value = powerCostC1
   serviceC2Cost.value = serviceCostC2
   efficiencyCostUpgrade.value = efficiencyCost
@@ -58,12 +66,17 @@ function convertSatoshiToUsd (satoshi: number) {
     <h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
       NFT calculator
     </h5>
-    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">
+    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-300">
       Calculate your NFT profitability by specifying your NFT efficiency and power levels.
     </p>
     <div class="grid lg:grid-cols-5 gap-3 items-stretch mt-10 m-auto">
-      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[50, 35]" />
-      <BaseInput v-model="selectedNftEfficiency" type="number" placeholder="0.00" label="NFT Efficiency Level">
+      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 25]" />
+      <BaseInput
+        v-model="selectedNftEfficiency"
+        type="number"
+        placeholder="0.00"
+        label="NFT Efficiency Level"
+      >
         <template #symbol>
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
             <EfficiencyIcon class="w-5 h-5" />
@@ -80,7 +93,7 @@ function convertSatoshiToUsd (satoshi: number) {
       <BaseInput v-model="nftUserDiscount" type="number" placeholder="0.00" label="GoMining Discount">
         <template #symbol>
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <span>%</span>
+            <span class="dark:text-gray-900">%</span>
           </div>
         </template>
       </BaseInput>
@@ -110,7 +123,7 @@ function convertSatoshiToUsd (satoshi: number) {
           </div>
         </template>
         <template #converted>
-          <span class="ml-2 text-sm text-gray-500 mr-2">
+          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
             (${{ efficiencyCostUpgrade }})
           </span>
         </template>
@@ -122,7 +135,7 @@ function convertSatoshiToUsd (satoshi: number) {
           </div>
         </template>
         <template #converted>
-          <span class="ml-2 text-sm text-gray-500 mr-2">
+          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
             (${{ powerCostUpgrade }})
           </span>
         </template>
@@ -143,7 +156,7 @@ function convertSatoshiToUsd (satoshi: number) {
       </ResultColumn>
       <ResultColumn v-model="potentialRateOfInvestment" label="ROI">
         <template #converted>
-          <div class="font-bold ml-1">
+          <div class="font-bold ml-1 dark:text-gray-300">
             %
           </div>
         </template>

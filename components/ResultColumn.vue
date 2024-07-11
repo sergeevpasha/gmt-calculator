@@ -23,10 +23,10 @@ defineProps({
 </script>
 <template>
   <div class="flex flex-wrap flex-col items-start">
-    <span class="text-sm text-gray-500">{{ label }}</span>
+    <span class="text-sm text-gray-500 dark:text-gray-300">{{ label }}</span>
     <div class="flex items-center">
       <slot name="symbol" />
-      <span class="text-lg font-bold ">{{ modelValue }}</span>
+      <span class="text-lg font-bold dark:text-gray-100">{{ modelValue }}</span>
       <slot name="converted" />
     </div>
   </div>

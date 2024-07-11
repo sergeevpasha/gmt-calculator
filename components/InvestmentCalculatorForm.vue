@@ -24,7 +24,7 @@ const { bestOption } = useInvest()
 const moneyToSpend = ref(1000)
 const userDiscount = ref(10)
 
-const baseEfficiency = ref(50)
+const baseEfficiency = ref(35)
 const efficiencyToUpgrade = ref(0)
 const powerToUpgrade = ref(0)
 const potentialReward = ref(0)
@@ -57,23 +57,23 @@ function convertSatoshiToUsd (satoshi: number) {
     <h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
       Invest calculator
     </h5>
-    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-400">
+    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-300">
       Calculate your potential profit and ROI by specifying your investment amount and NFT efficiency level.
     </p>
     <div class="grid md:grid-cols-4 gap-3 items-stretch mt-10 m-auto">
-      <BaseInput v-model="baseEfficiency" type="number" placeholder="0.00" label="Base NFT Efficiency Level" />
+      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 25]" />
       <BaseInput v-model="moneyToSpend" type="number" placeholder="0.00" label="Investment">
         <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <span class="mr-2">USDT</span>
+          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500 dark:text-gray-300">
+            <span class="mr-2 dark:text-gray-900">USDT</span>
             <TetherIcon class="w-5" />
           </div>
         </template>
       </BaseInput>
       <BaseInput v-model="userDiscount" type="number" placeholder="0.00" label="GoMining Discount">
         <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <span>%</span>
+          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500 dark:text-gray-300">
+            <span class="dark:text-gray-900">%</span>
           </div>
         </template>
       </BaseInput>
@@ -103,7 +103,7 @@ function convertSatoshiToUsd (satoshi: number) {
           </div>
         </template>
         <template #converted>
-          <span class="ml-2 text-sm text-gray-500 mr-2">
+          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
             (${{ efficiencyCostUpgrade }})
           </span>
         </template>
@@ -115,7 +115,7 @@ function convertSatoshiToUsd (satoshi: number) {
           </div>
         </template>
         <template #converted>
-          <span class="ml-2 text-sm text-gray-500 mr-2">
+          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
             (${{ powerCostUpgrade }})
           </span>
         </template>
@@ -136,7 +136,7 @@ function convertSatoshiToUsd (satoshi: number) {
       </ResultColumn>
       <ResultColumn v-model="potentialRateOfInvestment" label="ROI">
         <template #converted>
-          <div class="font-bold ml-1">
+          <div class="font-bold dark:text-gray-300 ml-1">
             %
           </div>
         </template>

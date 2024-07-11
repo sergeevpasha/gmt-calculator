@@ -1,9 +1,9 @@
 version: "3.8"
 services:
   dashboard:
-    container_name: ${DOCKER_NAME}
+    container_name: gmt-calculator
     build: ./docker/images/node
-    hostname: "${DOCKER_NAME}"
+    hostname: gmt-calculator
     volumes:
       - ./:/var/www
     working_dir: /var/www
