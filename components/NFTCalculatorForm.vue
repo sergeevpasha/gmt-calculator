@@ -70,7 +70,7 @@ function convertSatoshiToUsd (satoshi: number) {
       Calculate your NFT profitability by specifying your NFT efficiency and power levels.
     </p>
     <div class="grid lg:grid-cols-5 gap-3 items-stretch mt-10 m-auto">
-      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 25]" />
+      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 20]" />
       <BaseInput
         v-model="selectedNftEfficiency"
         type="number"
