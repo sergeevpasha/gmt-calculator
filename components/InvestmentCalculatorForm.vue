@@ -61,7 +61,7 @@ function convertSatoshiToUsd (satoshi: number) {
       Calculate your potential profit and ROI by specifying your investment amount and NFT efficiency level.
     </p>
     <div class="grid md:grid-cols-4 gap-3 items-stretch mt-10 m-auto">
-      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 25]" />
+      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 20]" />
       <BaseInput v-model="moneyToSpend" type="number" placeholder="0.00" label="Investment">
         <template #symbol>
           <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500 dark:text-gray-300">
