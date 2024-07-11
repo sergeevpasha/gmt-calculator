@@ -5,7 +5,7 @@ export const useInvest = () => {
   const kwhPrice = ref(0.05)
   const baseServiceCost = ref(0.0089)
 
-  function nftProfitCalculator (efficiency: number, power: number, userDiscount: number, satoshiReward: number, btcPrice: number, baseEfficiency: number = 50) {
+  function nftProfitCalculator (efficiency: number, power: number, userDiscount: number, satoshiReward: number, btcPrice: number, baseEfficiency: number = 35) {
     const potentialProfit = profit(satoshiReward * power, btcPrice, powerCost(efficiency, power, userDiscount), serviceCost(userDiscount, power))
     const potentialPowerCost = powerUpgrade(power, baseEfficiency)
     const potentialEfficiencyCost = parseFloat((efficiencyUpgrade(efficiency, baseEfficiency) * power).toFixed(2))
@@ -20,7 +20,7 @@ export const useInvest = () => {
       rateOfInvestment: rateOfInvestment(potentialPowerCost + potentialEfficiencyCost, potentialProfit)
     }
   }
-  function bestOption (moneyToSpend: number, btcPrice: number, satoshiReward: number, userDiscount: number, baseEfficiency: number = 50) {
+  function bestOption (moneyToSpend: number, btcPrice: number, satoshiReward: number, userDiscount: number, baseEfficiency: number = 35) {
     let bestProfit = 0
     let lastEfficiency = baseEfficiency
     let lastPower = 1
@@ -57,7 +57,7 @@ export const useInvest = () => {
     }
   }
 
-  function efficiencyUpgrade (efficiency: number, baseEfficiency: number = 50) {
+  function efficiencyUpgrade (efficiency: number, baseEfficiency: number = 35) {
     let efficiencyCost = 0
     for (let i = baseEfficiency - 1; i >= efficiency; i--) {
       efficiencyCost += efficiencyUpgrades[i]
@@ -66,7 +66,7 @@ export const useInvest = () => {
     return parseFloat(efficiencyCost.toFixed(2))
   }
 
-  function powerUpgrade (power: number, baseEfficiency: number = 50) {
+  function powerUpgrade (power: number, baseEfficiency: number = 35) {
     let powerCost = 0
     let lastPrice = 0
     for (let i = 0; i < power; i++) {

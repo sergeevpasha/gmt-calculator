@@ -33,7 +33,7 @@ function updateValue (event: any) {
 </script>
 <template>
   <div class="w-full flex flex-col">
-    <label class="flex text-sm font-medium leading-6 text-gray-900">{{ label }}</label>
+    <label class="flex text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">{{ label }}</label>
     <div class="relative">
       <select
         class="w-full pe-16 p-2.5 border border-gray-300 text-gray-900 text-sm rounded-lg ring-inset leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
