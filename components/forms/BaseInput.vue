@@ -1,49 +1,34 @@
 <script setup lang="ts">
-import { defineComponent } from 'vue'
-
-defineComponent({
-  name: 'BaseInput'
-})
-
-defineProps({
-  modelValue: {
-    type: Number,
-    required: true
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  label: {
-    type: String,
-    default: null
-  },
-  placeholder: {
-    type: String,
-    default: null
-  }
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-function updateValue (event: any) {
-  emit('update:modelValue', parseFloat(event.target.value))
+defineOptions({ inheritAttrs: false })
+defineProps<{ modelValue: number | string, label: string, id: string, type?: string, placeholder?: string, unit?: string, hint?: string }>()
+const emit = defineEmits<{ 'update:modelValue': [value: number | string] }>()
+function updateValue (event: Event) {
+  const input = event.target as HTMLInputElement
+  emit('update:modelValue', input.value === '' ? '' : Number(input.value))
 }
-
 </script>
 <template>
-  <div class="w-full flex flex-col">
-    <label class="flex text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">{{ label }}</label>
-    <div class="relative">
+  <div class="form-field">
+    <label :for="id">{{ label }}<slot name="label-extra" /></label>
+    <div class="input-wrap">
+      <span v-if="$slots.prefix" class="input-prefix"><slot name="prefix" /></span>
       <input
-        :type="type"
-        class="w-full pe-16 p-2.5 border border-gray-300 text-gray-900 text-sm rounded-lg ring-inset leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+        :id="id"
+        v-bind="$attrs"
+        :type="type || 'number'"
         :placeholder="placeholder"
-        required
         :value="modelValue"
+        :class="{ 'has-prefix': $slots.prefix }"
+        :aria-describedby="hint ? `${id}-hint` : undefined"
+        inputmode="decimal"
+        required
         @input="updateValue"
       >
+      <span v-if="unit" class="input-unit">{{ unit }}</span>
       <slot name="symbol" />
     </div>
+    <p v-if="hint" :id="`${id}-hint`" class="field-hint">
+      {{ hint }}
+    </p>
   </div>
 </template>

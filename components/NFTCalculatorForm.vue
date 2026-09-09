@@ -1,166 +1,108 @@
 <script setup lang="ts">
-import { defineComponent } from 'vue'
 import { useInvest } from '~/composables/useInvest'
-import ResultColumn from '~/components/ResultColumn.vue'
-import BaseInput from '~/components/forms/BaseInput.vue'
+import type { MarketData } from '~/data/gomining'
 
-defineComponent({
-  name: 'NFTCalculatorForm'
-})
+const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
+const { nftProfitCalculator, baseEfficiencies, minEfficiency, maxPower } = useInvest(() => props.market)
+const efficiencyOptions = computed(() => baseEfficiencies())
+const lowestEfficiency = computed(() => minEfficiency())
+const powerLimit = computed(() => maxPower())
+const baseEfficiency = ref(efficiencyOptions.value[0])
+const selectedNftEfficiency = ref<number | string>(efficiencyOptions.value[0])
+const selectedNftPower = ref<number | string>(1)
+const nftUserDiscount = ref<number | string>(10)
+const result = ref<ReturnType<typeof nftProfitCalculator> | null>(null)
+const investment = computed(() => result.value ? result.value.powerCost + result.value.efficiencyCost : 0)
+const error = ref('')
+const isStale = ref(false)
+const calculatedBtcPrice = ref(props.btcPrice)
 
-const props = defineProps({
-  btcPrice: {
-    type: Number,
-    default: 0
-  },
-  reward: {
-    type: Number,
-    default: 0
+function calculate () {
+  const efficiency = Number(selectedNftEfficiency.value)
+  const power = Number(selectedNftPower.value)
+  const discount = Number(nftUserDiscount.value)
+  if (![efficiency, power, discount].every(Number.isFinite) || !Number.isInteger(efficiency) || efficiency < lowestEfficiency.value || efficiency > baseEfficiency.value || !Number.isInteger(power) || power < 1 || power > powerLimit.value || nftUserDiscount.value === '' || discount < 0 || discount > 100) {
+    error.value = `Use an efficiency from ${lowestEfficiency.value} to your base level, power from 1 to ${powerLimit.value.toLocaleString('en-US')} TH, and a discount from 0 to 100%.`
+    return
   }
+  if (!Number.isFinite(props.btcPrice) || props.btcPrice <= 0 || props.btcPrice > 10000000 || !Number.isFinite(props.reward) || props.reward < 0 || props.reward > 1000000) {
+    error.value = 'Check your Bitcoin price and daily mining reward above.'
+    result.value = null
+    return
+  }
+  error.value = ''
+  calculatedBtcPrice.value = props.btcPrice
+  result.value = nftProfitCalculator(efficiency, power, discount, props.reward, props.btcPrice, baseEfficiency.value)
+  isStale.value = false
+}
+
+watch(baseEfficiency, (value) => {
+  if (Number(selectedNftEfficiency.value) > value) { selectedNftEfficiency.value = value }
 })
-
-const { nftProfitCalculator } = useInvest()
-
-const baseEfficiency = ref(35)
-const selectedNftEfficiency = ref(35)
-const selectedNftPower = ref(1)
-const nftEfficiency = ref(50)
-const nftPower = ref(0)
-const nftUserDiscount = ref(10)
-
-const potentialReward = ref(0)
-const potentialProfit = ref(0)
-const powerC1Cost = ref(0)
-const serviceC2Cost = ref(0)
-const efficiencyCostUpgrade = ref(0)
-const powerCostUpgrade = ref(0)
-const potentialRateOfInvestment = ref(0)
-
-function calculateNft () {
-  const {
-    powerCostC1,
-    serviceCostC2,
-    reward,
-    profit,
-    efficiencyCost,
-    powerCost,
-    rateOfInvestment
-  } = nftProfitCalculator(selectedNftEfficiency.value, selectedNftPower.value, nftUserDiscount.value, props.reward, props.btcPrice, baseEfficiency.value)
-  powerC1Cost.value = powerCostC1
-  serviceC2Cost.value = serviceCostC2
-  efficiencyCostUpgrade.value = efficiencyCost
-  powerCostUpgrade.value = powerCost
-  potentialReward.value = convertSatoshiToUsd(reward)
-  potentialProfit.value = profit
-  nftEfficiency.value = selectedNftEfficiency.value
-  nftPower.value = selectedNftPower.value
-  potentialRateOfInvestment.value = rateOfInvestment
-}
-
-function convertSatoshiToUsd (satoshi: number) {
-  return parseFloat((satoshi / 100000000 * props.btcPrice).toFixed(2))
-}
+watch([selectedNftEfficiency, selectedNftPower, nftUserDiscount, baseEfficiency], () => { isStale.value = true })
+watch(() => props.market, () => {
+  if (!efficiencyOptions.value.includes(baseEfficiency.value)) { baseEfficiency.value = efficiencyOptions.value[0] }
+  calculate()
+})
+watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
 </script>
 <template>
-  <div class="w-full p-4 text-center bg-gray-100 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-      NFT calculator
-    </h5>
-    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-300">
-      Calculate your NFT profitability by specifying your NFT efficiency and power levels.
-    </p>
-    <div class="grid lg:grid-cols-5 gap-3 items-stretch mt-10 m-auto">
-      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 20]" />
-      <BaseInput
-        v-model="selectedNftEfficiency"
-        type="number"
-        placeholder="0.00"
-        label="NFT Efficiency Level"
-      >
-        <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <EfficiencyIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </BaseInput>
-      <BaseInput v-model="selectedNftPower" type="number" placeholder="0.00" label="NFT Power Level">
-        <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <PowerIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </BaseInput>
-      <BaseInput v-model="nftUserDiscount" type="number" placeholder="0.00" label="GoMining Discount">
-        <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500">
-            <span class="dark:text-gray-900">%</span>
-          </div>
-        </template>
-      </BaseInput>
-      <div class="flex flex-col justify-end align-bottom">
-        <BaseButton label="Calculate" @click="calculateNft" />
+  <div class="calculator-workspace">
+    <form class="setup-panel" @submit.prevent="calculate">
+      <div class="panel-heading">
+        <AppIcon name="chip" /><h2>Meet your miner's potential</h2>
       </div>
-    </div>
-    <div class="grid lg:grid-cols-5 gap-3 items-stretch mt-10 m-auto">
-      <ResultColumn v-model="powerC1Cost" label="C1">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="serviceC2Cost" label="C2">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="nftEfficiency" label="Efficiency Level">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <EfficiencyIcon class="w-5 h-5" />
-          </div>
-        </template>
-        <template #converted>
-          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
-            (${{ efficiencyCostUpgrade }})
-          </span>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="nftPower" label="Power Level">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <PowerIcon class="w-5 h-5" />
-          </div>
-        </template>
-        <template #converted>
-          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
-            (${{ powerCostUpgrade }})
-          </span>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialReward" label="Reward">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialProfit" label="Profit">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialRateOfInvestment" label="ROI">
-        <template #converted>
-          <div class="font-bold ml-1 dark:text-gray-300">
-            %
-          </div>
-        </template>
-      </ResultColumn>
-    </div>
+      <p class="panel-description">
+        Turn your NFT specs into an outlook.
+      </p>
+      <div class="form-fields nft-fields">
+        <BaseSelect id="nft-base-efficiency" v-model="baseEfficiency" label="Base NFT efficiency" :options="efficiencyOptions" unit="W / TH" />
+        <BaseInput
+          id="nft-efficiency"
+          v-model="selectedNftEfficiency"
+          label="Current efficiency"
+          :min="lowestEfficiency"
+          :max="baseEfficiency"
+          step="1"
+          unit="W / TH"
+        />
+        <BaseInput
+          id="nft-power"
+          v-model="selectedNftPower"
+          label="Mining power"
+          min="1"
+          :max="powerLimit"
+          step="1"
+          unit="TH"
+        />
+        <BaseInput
+          id="nft-discount"
+          v-model="nftUserDiscount"
+          label="GoMining discount"
+          min="0"
+          max="100"
+          step="any"
+          unit="%"
+        />
+      </div>
+      <p v-if="error" class="form-error" role="alert">
+        {{ error }}
+      </p>
+      <BaseButton type="submit" label="Calculate returns" />
+      <p class="setup-footnote" aria-live="polite">
+        <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
+      </p>
+      <div class="calculation-tip">
+        <AppIcon name="bolt" /><p><strong>Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. Upgrades go down to {{ lowestEfficiency }} W / TH.</p>
+      </div>
+    </form>
+    <CalculatorResults
+      :result="result"
+      :investment="investment"
+      :btc-price="calculatedBtcPrice"
+      :stale="isStale"
+      id-prefix="nft"
+      nft
+    />
   </div>
 </template>

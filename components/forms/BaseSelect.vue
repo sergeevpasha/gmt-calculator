@@ -1,50 +1,18 @@
 <script setup lang="ts">
-import { defineComponent } from 'vue'
-
-defineComponent({
-  name: 'BaseSelect'
-})
-
-defineProps({
-  modelValue: {
-    type: Number,
-    required: true
-  },
-  label: {
-    type: String,
-    default: null
-  },
-  placeholder: {
-    type: String,
-    default: null
-  },
-  options: {
-    type: Array<any>,
-    default: (): Array<any> => []
-  }
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-function updateValue (event: any) {
-  emit('update:modelValue', parseFloat(event.target.value))
-}
-
+defineProps<{ modelValue: number, label: string, id: string, options: Array<number | { value: number, label: string }>, unit?: string }>()
+const emit = defineEmits<{ 'update:modelValue': [value: number] }>()
+const optionValue = (option: number | { value: number, label: string }) => typeof option === 'number' ? option : option.value
 </script>
 <template>
-  <div class="w-full flex flex-col">
-    <label class="flex text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">{{ label }}</label>
-    <div class="relative">
-      <select
-        class="w-full pe-16 p-2.5 border border-gray-300 text-gray-900 text-sm rounded-lg ring-inset leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-        required
-        :value="modelValue"
-        @input="updateValue"
-      >
-        <option v-for="option in options" :key="option">
-          {{ option }}
+  <div class="form-field">
+    <label :for="id">{{ label }}</label>
+    <div class="input-wrap select-wrap">
+      <select :id="id" :value="modelValue" @change="emit('update:modelValue', Number(($event.target as HTMLSelectElement).value))">
+        <option v-for="option in options" :key="optionValue(option)" :value="optionValue(option)">
+          {{ typeof option === 'number' ? `${option} ${unit ?? ''}`.trim() : option.label }}
         </option>
       </select>
+      <AppIcon name="chevron" />
     </div>
   </div>
 </template>

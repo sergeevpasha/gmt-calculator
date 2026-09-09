@@ -1,146 +1,114 @@
 <script setup lang="ts">
-import { defineComponent } from 'vue'
 import { useInvest } from '~/composables/useInvest'
-import ResultColumn from '~/components/ResultColumn.vue'
-import BaseInput from '~/components/forms/BaseInput.vue'
+import type { MarketData } from '~/data/gomining'
 
-defineComponent({
-  name: 'InvestmentCalculatorForm'
-})
-
-const props = defineProps({
-  btcPrice: {
-    type: Number,
-    default: 0
-  },
-  reward: {
-    type: Number,
-    default: 0
-  }
-})
-
-const { bestOption } = useInvest()
-
-const moneyToSpend = ref(1000)
-const userDiscount = ref(10)
-
-const baseEfficiency = ref(35)
-const efficiencyToUpgrade = ref(0)
-const powerToUpgrade = ref(0)
-const potentialReward = ref(0)
-const potentialProfit = ref(0)
-const powerC1Cost = ref(0)
-const serviceC2Cost = ref(0)
-const efficiencyCostUpgrade = ref(0)
-const powerCostUpgrade = ref(0)
-const potentialRateOfInvestment = ref(0)
+const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
+const { bestOption, baseEfficiencies, minerPrice } = useInvest(() => props.market)
+const moneyToSpend = ref<number | string>(1000)
+const userDiscount = ref<number | string>(10)
+// 0 compares every efficiency GoMining sells and picks the most profitable miner.
+const baseEfficiency = ref(0)
+const efficiencyOptions = computed(() => [{ value: 0, label: 'Best value for the budget' }, ...baseEfficiencies()])
+const cheapestTerahash = computed(() => Math.min(...baseEfficiencies().map(base => minerPrice(1, base))))
+const result = ref<ReturnType<typeof bestOption> | null>(null)
+const calculatedInvestment = ref(1000)
+const error = ref('')
+const isStale = ref(false)
+const calculatedBtcPrice = ref(props.btcPrice)
 
 function calculate () {
-  const { powerCostC1, serviceCostC2, power, powerCost, efficiency, efficiencyCost, reward, profit, rateOfInvestment } = bestOption(moneyToSpend.value, props.btcPrice, props.reward, userDiscount.value, baseEfficiency.value)
-  powerCostUpgrade.value = powerCost
-  efficiencyCostUpgrade.value = efficiencyCost
-  powerC1Cost.value = powerCostC1
-  serviceC2Cost.value = serviceCostC2
-  efficiencyToUpgrade.value = efficiency
-  powerToUpgrade.value = power
-  potentialReward.value = convertSatoshiToUsd(reward)
-  potentialProfit.value = profit
-  potentialRateOfInvestment.value = rateOfInvestment
+  const investment = Number(moneyToSpend.value)
+  const discount = Number(userDiscount.value)
+  if (!Number.isFinite(investment) || investment < 1 || investment > 1000000 || userDiscount.value === '' || !Number.isFinite(discount) || discount < 0 || discount > 100) {
+    error.value = 'Enter an investment from $1 to $1,000,000 and a discount from 0 to 100%.'
+    return
+  }
+  if (!Number.isFinite(props.btcPrice) || props.btcPrice <= 0 || props.btcPrice > 10000000 || !Number.isFinite(props.reward) || props.reward < 0 || props.reward > 1000000) {
+    error.value = 'Check your Bitcoin price and daily mining reward above.'
+    result.value = null
+    return
+  }
+  error.value = ''
+  calculatedBtcPrice.value = props.btcPrice
+  calculatedInvestment.value = investment
+  result.value = bestOption(investment, props.btcPrice, props.reward, discount, baseEfficiency.value)
+  if (result.value.power === 0) {
+    error.value = `This budget is below the price of 1 TH ($${cheapestTerahash.value.toFixed(2)}). Increase it to calculate returns.`
+    result.value = null
+  }
+  isStale.value = false
 }
 
-function convertSatoshiToUsd (satoshi: number) {
-  return parseFloat((satoshi / 100000000 * props.btcPrice).toFixed(2))
-}
+watch([moneyToSpend, userDiscount, baseEfficiency], () => { isStale.value = true })
+watch(() => props.market, () => {
+  if (baseEfficiency.value && !baseEfficiencies().includes(baseEfficiency.value)) { baseEfficiency.value = 0 }
+  calculate()
+})
+watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
 </script>
 <template>
-  <div class="w-full p-4 text-center bg-gray-100 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-      Invest calculator
-    </h5>
-    <p class="mb-5 text-base text-gray-500 sm:text-lg dark:text-gray-300">
-      Calculate your potential profit and ROI by specifying your investment amount and NFT efficiency level.
-    </p>
-    <div class="grid md:grid-cols-4 gap-3 items-stretch mt-10 m-auto">
-      <BaseSelect v-model="baseEfficiency" label="Base NFT Efficiency Level" :options="[35, 28, 20]" />
-      <BaseInput v-model="moneyToSpend" type="number" placeholder="0.00" label="Investment">
-        <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500 dark:text-gray-300">
-            <span class="mr-2 dark:text-gray-900">USDT</span>
-            <TetherIcon class="w-5" />
-          </div>
-        </template>
-      </BaseInput>
-      <BaseInput v-model="userDiscount" type="number" placeholder="0.00" label="GoMining Discount">
-        <template #symbol>
-          <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none text-gray-500 dark:text-gray-300">
-            <span class="dark:text-gray-900">%</span>
-          </div>
-        </template>
-      </BaseInput>
-      <div class="flex flex-col justify-end align-bottom">
-        <BaseButton label="Calculate" @click="calculate" />
+  <div class="calculator-workspace">
+    <form class="setup-panel" @submit.prevent="calculate">
+      <div class="panel-heading">
+        <AppIcon name="settings" /><h2>Set up your investment</h2>
       </div>
-    </div>
-    <div class="grid md:grid-cols-4 gap-3 items-stretch mt-10 m-auto">
-      <ResultColumn v-model="powerC1Cost" label="C1">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
+      <p class="panel-description">
+        A few details. A clearer picture.
+      </p>
+      <div class="form-fields">
+        <div class="investment-amount">
+          <BaseInput
+            id="investment-amount"
+            v-model="moneyToSpend"
+            label="Investment amount"
+            min="1"
+            max="1000000"
+            step="any"
+            unit="USDT"
+          >
+            <template #prefix>
+              $
+            </template>
+          </BaseInput>
+          <div class="amount-presets" aria-label="Investment presets">
+            <button
+              v-for="amount in [500, 1000, 5000, 10000]"
+              :key="amount"
+              type="button"
+              :class="{ selected: moneyToSpend === amount }"
+              :aria-pressed="moneyToSpend === amount"
+              @click="moneyToSpend = amount"
+            >
+              ${{ amount.toLocaleString('en-US') }}
+            </button>
           </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="serviceC2Cost" label="C2">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="efficiencyToUpgrade" label="Efficiency Level">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <EfficiencyIcon class="w-5 h-5" />
-          </div>
-        </template>
-        <template #converted>
-          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
-            (${{ efficiencyCostUpgrade }})
-          </span>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="powerToUpgrade" label="Power Level">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <PowerIcon class="w-5 h-5" />
-          </div>
-        </template>
-        <template #converted>
-          <span class="ml-2 text-sm text-gray-500 dark:text-gray-300 mr-2">
-            (${{ powerCostUpgrade }})
-          </span>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialReward" label="Reward">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialProfit" label="Profit">
-        <template #symbol>
-          <div class="text-gray-500 mr-2">
-            <TetherIcon class="w-5 h-5" />
-          </div>
-        </template>
-      </ResultColumn>
-      <ResultColumn v-model="potentialRateOfInvestment" label="ROI">
-        <template #converted>
-          <div class="font-bold dark:text-gray-300 ml-1">
-            %
-          </div>
-        </template>
-      </resultcolumn>
-    </div>
+        </div>
+        <BaseSelect id="investment-efficiency" v-model="baseEfficiency" label="Miner efficiency" :options="efficiencyOptions" unit="W / TH" />
+        <BaseInput
+          id="investment-discount"
+          v-model="userDiscount"
+          label="GoMining discount"
+          min="0"
+          max="100"
+          step="any"
+          unit="%"
+        >
+          <template #label-extra>
+            <span class="discount-badge">On maintenance</span>
+          </template>
+        </BaseInput>
+      </div>
+      <p v-if="error" class="form-error" role="alert">
+        {{ error }}
+      </p>
+      <BaseButton type="submit" label="Calculate returns" />
+      <p class="setup-footnote" aria-live="polite">
+        <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
+      </p>
+      <div class="calculation-tip">
+        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We compare GoMining's current miner prices and efficiency upgrades to find the best daily return for your budget.</p>
+      </div>
+    </form>
+    <CalculatorResults :result="result" :investment="calculatedInvestment" :btc-price="calculatedBtcPrice" :stale="isStale" id-prefix="investment" />
   </div>
 </template>

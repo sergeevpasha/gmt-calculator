@@ -1,7 +1,8 @@
 <template>
-  <footer class="mt-4 border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-    <div class="container flex flex-wrap items-center justify-between mx-auto p-4 dark:text-gray-100">
-      2024 Beta Version
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <span>Built for a more calculated approach.</span>
+      <span>GoMining profitability calculator <span class="footer-dot">·</span> Estimates in USD</span>
     </div>
   </footer>
 </template>
