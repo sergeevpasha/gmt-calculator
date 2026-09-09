@@ -212,8 +212,16 @@ onBeforeUnmount(() => priceRequest?.abort())
       <NFTCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? NaN : Number(reward)" :market="market" />
     </div>
 
+    <CalculationSources
+      :market="market"
+      :btc-price="Number(btcPrice)"
+      :price-label="priceLabel"
+      :reward-label="rewardLabel"
+      :live="marketStatus === 'live'"
+    />
+
     <div class="estimate-note">
-      <AppIcon name="info" /><p>A little perspective: these are estimates, not guarantees. Miner prices, fees and the daily payout come from GoMining's public API and refresh every few minutes. GoMining sells {{ market.referenceEfficiency }} W / TH miners; other efficiencies are valued as that price minus GoMining's official cost of upgrading them back to {{ market.referenceEfficiency }} W / TH. Returns assume a constant BTC price and mining reward. Network conditions, fees, and upgrade prices may change.</p>
+      <AppIcon name="info" /><p>A little perspective: these are estimates, not guarantees. Returns assume a constant BTC price and mining reward, without reinvestment. Network conditions, fees, and GoMining's prices may change.</p>
     </div>
   </div>
 </template>

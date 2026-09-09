@@ -5,8 +5,9 @@
         <AppLogo class="brand-mark" />
         <span class="brand-name">GMT <span>Calculator</span></span>
       </a>
-      <div class="header-note">
-        <span class="status-dot" /> A clearer view of your mining
+      <div class="platform-badge">
+        <span>Built for</span>
+        <GoMiningIcon role="img" aria-label="GoMining" />
       </div>
     </div>
   </header>
