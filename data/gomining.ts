@@ -5,21 +5,15 @@
 //   GET  https://api.gomining.com/api/nft-collection/find-all-generative  miners GoMining sells, with prices
 //   POST https://api.gomining.com/api/nft/get-upgrade-rate                the W/TH step tables
 //
-// Miner prices follow GoMining's own valuation function (its `NftPriceCalculator`), which prices any power and
-// efficiency as `base price + energy bonus + power bonus`. See `composables/useInvest.ts` for the transcription.
-// Nothing here comes from the secondary market.
+// Every number the calculators use is fetched. Miner prices combine GoMining's published price ladder for the
+// efficiency it sells with the per-W/TH valuation steps from get-upgrade-rate. Nothing is fitted or hardcoded,
+// and nothing comes from the secondary market. See composables/useInvest.ts for how the two are combined.
 // `gomining-snapshot.json` stores the last raw responses and is the fallback when the API is unreachable.
 // Refresh it with: docker compose exec -T dashboard yarn update-snapshot
 import raw from './gomining-snapshot.json'
 
 // W/TH range the calculators cover: 12 is the best level GoMining sells, 20 the least efficient it still upgrades.
 export const EFFICIENCY_RANGE = { min: 12, max: 20 }
-
-// GoMining's valuation charges each power band at `basePrice * BAND_DECAY^(level - 1)`, where the decay is
-// `1 - discount * discountCoefficient` from `nft/get-power-upgrade-info`. That endpoint needs a signed-in account,
-// so the constant is calibrated instead: it is the value that reproduces GoMining's own quote of $7.35581583 for
-// the next TH on a 128 TH miner at 20 W/TH, and it tracks the published 12 W/TH ladder to within 0.5% up to 128 TH.
-export const BAND_DECAY = 0.9910237628
 
 export interface IncomeAggregation {
   createdAt: string
@@ -47,7 +41,7 @@ export interface GenerativePreset {
 export interface UpgradeStep { toLevel: number, priceUsd: number }
 
 export interface UpgradeRates {
-  // Drives GoMining's valuation function, so it sets what each W/TH level is worth.
+  // Sets what one TH is worth at each W/TH level, so it prices the efficiencies GoMining does not list.
   powerUpgradePriceConfig: UpgradeStep[]
   // What GoMining charges an owner to improve a miner by one W/TH. Reference only.
   energyEfficiencyUpgradePriceConfig: UpgradeStep[]
@@ -75,19 +69,15 @@ export interface MarketData {
   averageRewardUsdPerThDay: number
   kwhPriceUsd: number
   serviceUsdPerThDay: number
-  // The efficiency GoMining sells, and the reference point of its valuation function.
+  // The efficiency GoMining sells; its listed ladder is in `miners`.
   referenceEfficiency: number
-  // Listed price of 1 TH at the reference efficiency; the valuation function's base price.
+  // Listed price of 1 TH at the reference efficiency.
   basePriceUsd: number
-  // Per-band decay applied to the base price.
-  bandDecay: number
-  // The power levels, ascending, as GoMining lists them.
-  powersByLevel: number[]
-  // Full step table feeding the valuation function; every level matters, not just 12 to 19.
+  // Full step table that values a TH at each W/TH level; every level matters, not just 12 to 19.
   powerUpgradeSteps: UpgradeStep[]
   // Per-TH cost of upgrading an owned miner one W/TH, keyed by target level. Reference only.
   efficiencyUpgradePrices: Record<number, number>
-  // GoMining's published ladder at the reference efficiency.
+  // GoMining's published price ladder at the reference efficiency, ascending by power.
   miners: MinerPreset[]
 }
 
@@ -119,7 +109,6 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
   if (miners.length < 3) {
     throw new Error('GoMining price ladder is too short')
   }
-  // The valuation function's base price is the listed price of exactly 1 TH.
   const base = miners.find(miner => miner.power === 1)
   if (!base) {
     throw new Error('GoMining does not list a 1 TH miner to anchor prices on')
@@ -149,8 +138,6 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
     serviceUsdPerThDay: round(income.c2ValuePerThToday + (income.c3ValuePerThToday ?? 0) + (income.c4ValuePerThToday ?? 0), 6),
     referenceEfficiency,
     basePriceUsd: base.priceUsd,
-    bandDecay: BAND_DECAY,
-    powersByLevel: miners.map(miner => miner.power),
     powerUpgradeSteps,
     efficiencyUpgradePrices,
     miners

@@ -1,5 +1,5 @@
 import { EFFICIENCY_RANGE } from '~/data/gomining'
-import type { MarketData } from '~/data/gomining'
+import type { MarketData, MinerPreset } from '~/data/gomining'
 
 export interface MiningEstimate {
   // Satoshi per day.
@@ -12,10 +12,10 @@ export interface MiningEstimate {
   serviceCostC2: number
   // Price of the miner, USD.
   price: number
-  // The three terms of GoMining's valuation, for display.
-  basePrice: number
-  energyBonus: number
-  powerBonus: number
+  // GoMining's listed price for this power at the efficiency it sells.
+  listedPrice: number
+  // What this efficiency subtracts from the listed price, USD (negative below the reference efficiency).
+  efficiencyAdjustment: number
   // Price of adding one more TH at this size and efficiency, USD.
   marginalPrice: number
   // Annual return on the investment, %.
@@ -24,9 +24,7 @@ export interface MiningEstimate {
   efficiency: number
 }
 
-interface Band { power: number, level: number }
-
-const bandCache = new WeakMap<MarketData, Band[]>()
+const ladderCache = new WeakMap<MarketData, MinerPreset[]>()
 
 export const useInvest = (getMarket: () => MarketData) => {
   const round = (value: number) => parseFloat(value.toFixed(2))
@@ -39,27 +37,52 @@ export const useInvest = (getMarket: () => MarketData) => {
     return EFFICIENCY_RANGE.max
   }
 
-  function maxPower () {
-    return Math.max(...getMarket().powersByLevel)
-  }
-
-  // GoMining drops the first and last entry of powersByLevel and numbers the rest from 1.
-  function bands () {
+  // GoMining's published price ladder for the efficiency it sells, ascending by power.
+  function ladder () {
     const market = getMarket()
-    let list = bandCache.get(market)
+    let list = ladderCache.get(market)
     if (!list) {
-      list = market.powersByLevel.slice(1, market.powersByLevel.length - 1).map((power, index) => ({ power, level: index + 1 }))
-      bandCache.set(market, list)
+      list = [...market.miners].sort((a, b) => a.power - b.power)
+      ladderCache.set(market, list)
     }
     return list
   }
 
-  function bandFor (power: number): Band {
-    const list = bands()
-    return list.find((band, index) => {
-      const next = list[index + 1]
-      return band.power <= power && (!next || next.power > power)
-    }) ?? list[0]
+  function maxPower () {
+    const list = ladder()
+    return list[list.length - 1].power
+  }
+
+  // GoMining's listed price for this power, interpolated between the sizes it publishes so that every listed
+  // size costs exactly what GoMining charges for it.
+  function listedPrice (power: number) {
+    const list = ladder()
+    const first = list[0]
+    const last = list[list.length - 1]
+    if (power <= first.power) {
+      return first.priceUsd * power / first.power
+    }
+    if (power >= last.power) {
+      return last.priceUsd * power / last.power
+    }
+    const index = list.findIndex(preset => preset.power >= power)
+    const lower = list[index - 1]
+    const upper = list[index]
+    return lower.priceUsd + (upper.priceUsd - lower.priceUsd) * (power - lower.power) / (upper.power - lower.power)
+  }
+
+  // GoMining's listed price for one more TH at this size, from the slope of its own ladder.
+  function listedMarginal (power: number) {
+    const list = ladder()
+    const index = list.findIndex(preset => preset.power > power)
+    if (index <= 0) {
+      const last = list[list.length - 1]
+      const previous = list[list.length - 2]
+      return (last.priceUsd - previous.priceUsd) / (last.power - previous.power)
+    }
+    const lower = list[index - 1]
+    const upper = list[index]
+    return (upper.priceUsd - lower.priceUsd) / (upper.power - lower.power)
   }
 
   // GoMining's getUpgradeEEPrice: what one TH is worth at `efficiency` relative to the efficiency it sells.
@@ -80,33 +103,11 @@ export const useInvest = (getMarket: () => MarketData) => {
     return atEfficiency - reference
   }
 
-  // GoMining's getPowerUpgradePrice: every TH above the base one, charged at its band's decayed price.
-  function powerBonus (power: number, bonus: number) {
-    const market = getMarket()
-    const list = bands()
-    const current = bandFor(power)
-    return list.filter(band => band.level <= current.level).reduce((total, band, index) => {
-      const next = list[index + 1]
-      const terahashes = !next || next.power > power ? power - band.power : next.power - band.power
-      if (terahashes <= 0) {
-        return total
-      }
-      return total + terahashes * market.basePriceUsd * Math.pow(market.bandDecay, band.level - 1) + terahashes * bonus
-    }, 0)
-  }
-
-  // The three terms are rounded first so the breakdown shown to the reader always adds up to the price.
+  // The two terms are rounded first so the breakdown shown to the reader always adds up to the price.
   function priceBreakdown (power: number, efficiency: number) {
-    const market = getMarket()
-    const bonus = energyBonus(efficiency)
-    const energy = round(bonus)
-    const power_ = round(powerBonus(power, bonus))
-    return {
-      basePrice: market.basePriceUsd,
-      energyBonus: energy,
-      powerBonus: power_,
-      price: round(market.basePriceUsd + energy + power_)
-    }
+    const listed = round(listedPrice(power))
+    const adjustment = round(energyBonus(efficiency) * power)
+    return { listedPrice: listed, efficiencyAdjustment: adjustment, price: round(listed + adjustment) }
   }
 
   function minerPrice (power: number, efficiency: number) {
@@ -117,10 +118,8 @@ export const useInvest = (getMarket: () => MarketData) => {
     return price > 0 ? price : NaN
   }
 
-  // What GoMining charges for the next TH at this size and efficiency.
   function marginalPrice (power: number, efficiency: number) {
-    const market = getMarket()
-    return round(market.basePriceUsd * Math.pow(market.bandDecay, bandFor(power).level - 1) + energyBonus(efficiency))
+    return round(listedMarginal(power) + energyBonus(efficiency))
   }
 
   function powerCost (energyEfficiency: number, power: number, userDiscount: number) {
@@ -155,9 +154,8 @@ export const useInvest = (getMarket: () => MarketData) => {
       powerCostC1: powerCost(efficiency, power, userDiscount),
       serviceCostC2: serviceCost(userDiscount, power),
       price: breakdown.price,
-      basePrice: breakdown.basePrice,
-      energyBonus: breakdown.energyBonus,
-      powerBonus: breakdown.powerBonus,
+      listedPrice: breakdown.listedPrice,
+      efficiencyAdjustment: breakdown.efficiencyAdjustment,
       marginalPrice: marginalPrice(power, efficiency),
       rateOfInvestment: rateOfInvestment(investment ?? breakdown.price, potentialProfit),
       power,
@@ -196,9 +194,8 @@ export const useInvest = (getMarket: () => MarketData) => {
       powerCostC1: 0,
       serviceCostC2: 0,
       price: 0,
-      basePrice: 0,
-      energyBonus: 0,
-      powerBonus: 0,
+      listedPrice: 0,
+      efficiencyAdjustment: 0,
       marginalPrice: 0,
       rateOfInvestment: 0,
       power: 0,
@@ -206,5 +203,5 @@ export const useInvest = (getMarket: () => MarketData) => {
     }
   }
 
-  return { nftProfitCalculator, bestOption, minerPrice, marginalPrice, energyBonus, priceBreakdown, minEfficiency, maxEfficiency, maxPower }
+  return { nftProfitCalculator, bestOption, minerPrice, marginalPrice, listedPrice, energyBonus, priceBreakdown, minEfficiency, maxEfficiency, maxPower }
 }

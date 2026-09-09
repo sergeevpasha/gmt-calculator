@@ -5,9 +5,8 @@ interface MiningResult {
   powerCostC1: number
   serviceCostC2: number
   price: number
-  basePrice: number
-  energyBonus: number
-  powerBonus: number
+  listedPrice: number
+  efficiencyAdjustment: number
   marginalPrice: number
   rateOfInvestment: number
   power: number

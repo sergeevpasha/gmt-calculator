@@ -24,9 +24,9 @@ function loadModule (filename) {
   return exports
 }
 
-const { EFFICIENCY_RANGE, BAND_DECAY, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
+const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, energyBonus, priceBreakdown, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, listedPrice, energyBonus, priceBreakdown, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -35,21 +35,24 @@ const rawSnapshot = () => JSON.parse(readFileSync(resolve(root, 'data/gomining-s
 function assertAccounting (result, btcPrice) {
   const gross = round(result.reward / 100000000 * btcPrice)
   assert.equal(result.profit, round(gross - result.powerCostC1 - result.serviceCostC2))
-  assert.equal(result.price, round(result.basePrice + result.energyBonus + result.powerBonus))
+  assert.equal(result.price, round(result.listedPrice + result.efficiencyAdjustment))
   Object.values(result).forEach(value => assert.ok(Number.isFinite(value)))
 }
 
-test('the bundled GoMining snapshot normalizes into calculator inputs', () => {
+test('every calculator input comes from the fetched snapshot, nothing is hardcoded', () => {
   assert.equal(marketSnapshot.source, 'snapshot')
   assert.equal(marketSnapshot.rewardSatPerThDay, round(marketSnapshot.rewardUsdPerThDay / marketSnapshot.btcPriceUsd * 100000000))
-  assert.equal(marketSnapshot.kwhPriceUsd, 0.05)
-  assert.equal(marketSnapshot.serviceUsdPerThDay, 0.0089)
   assert.equal(marketSnapshot.referenceEfficiency, 12)
-  assert.equal(marketSnapshot.basePriceUsd, 18.99)
-  assert.equal(marketSnapshot.bandDecay, BAND_DECAY)
+  assert.equal(marketSnapshot.basePriceUsd, marketSnapshot.miners.find(miner => miner.power === 1).priceUsd)
+  assert.ok(marketSnapshot.powerUpgradeSteps.length > 0)
   assert.equal(minEfficiency(), EFFICIENCY_RANGE.min)
   assert.equal(maxEfficiency(), EFFICIENCY_RANGE.max)
   assert.equal(maxPower(), 5000)
+  // No fitted or pinned constant may reappear in the data module.
+  const source = readFileSync(resolve(root, 'data/gomining.ts'), 'utf8')
+  assert.ok(!/BAND_DECAY|bandDecay/.test(source), 'a pinned decay constant is back in data/gomining.ts')
+  const model = readFileSync(resolve(root, 'composables/useInvest.ts'), 'utf8')
+  assert.ok(!/0\.99\d{6}/.test(model), 'a hardcoded decay literal is back in composables/useInvest.ts')
 })
 
 test('malformed API responses are rejected instead of producing zero prices', () => {
@@ -61,25 +64,26 @@ test('malformed API responses are rejected instead of producing zero prices', ()
   assert.equal(normalizeMarket(snapshot, 'live').source, 'live')
 })
 
-test('reproduces GoMinings own quote for the next TH on a 128 TH miner at 20 W/TH', () => {
-  assert.equal(marginalPrice(128, 20), 7.36)
-  const exact = marketSnapshot.basePriceUsd * Math.pow(marketSnapshot.bandDecay, 9) + energyBonus(20)
-  assert.ok(Math.abs(exact - 7.35581583) < 0.0000001, `expected 7.35581583, got ${exact}`)
+test('every listed size costs exactly what GoMining charges for it', () => {
+  for (const preset of marketSnapshot.miners) {
+    assert.equal(round(listedPrice(preset.power)), round(preset.priceUsd), `${preset.power} TH`)
+    assert.equal(minerPrice(preset.power, marketSnapshot.referenceEfficiency), round(preset.priceUsd))
+  }
 })
 
-test('energy value per TH follows GoMinings power upgrade steps', () => {
+test('sizes between listed ones interpolate along GoMinings ladder', () => {
+  const two = marketSnapshot.miners.find(miner => miner.power === 2).priceUsd
+  const four = marketSnapshot.miners.find(miner => miner.power === 4).priceUsd
+  assert.equal(round(listedPrice(3)), round(two + (four - two) / 2))
+  const largest = marketSnapshot.miners[marketSnapshot.miners.length - 1]
+  assert.equal(round(listedPrice(largest.power * 2)), round(largest.priceUsd * 2))
+})
+
+test('energy value per TH comes from GoMinings own step table', () => {
   assert.equal(energyBonus(12), 0)
   assert.equal(round(energyBonus(20)), -10.15)
   for (let efficiency = 13; efficiency <= 20; efficiency++) {
     assert.ok(energyBonus(efficiency) < energyBonus(efficiency - 1), 'a worse efficiency must be worth less')
-  }
-})
-
-test('the base price is GoMinings listed 1 TH price and the ladder is tracked closely', () => {
-  assert.equal(minerPrice(1, 12), 18.99)
-  for (const preset of marketSnapshot.miners.filter(miner => miner.power >= 1 && miner.power <= 128)) {
-    const error = Math.abs(minerPrice(preset.power, 12) - preset.priceUsd) / preset.priceUsd
-    assert.ok(error < 0.01, `${preset.power} TH is ${(error * 100).toFixed(2)}% off the listed price`)
   }
 })
 
@@ -94,11 +98,14 @@ test('a worse efficiency costs less up front at every size', () => {
   assert.ok(Number.isNaN(minerPrice(1, 12.5)))
 })
 
-test('price breakdown adds up', () => {
+test('price breakdown adds up and the marginal follows the ladder slope', () => {
   const breakdown = priceBreakdown(128, 20)
-  assert.equal(breakdown.basePrice, 18.99)
-  assert.equal(round(breakdown.energyBonus), -10.15)
-  assert.equal(breakdown.price, round(breakdown.basePrice + breakdown.energyBonus + breakdown.powerBonus))
+  assert.equal(breakdown.price, round(breakdown.listedPrice + breakdown.efficiencyAdjustment))
+  assert.equal(breakdown.listedPrice, round(marketSnapshot.miners.find(miner => miner.power === 128).priceUsd))
+  const at128 = marketSnapshot.miners.find(miner => miner.power === 128).priceUsd
+  const at192 = marketSnapshot.miners.find(miner => miner.power === 192).priceUsd
+  assert.equal(marginalPrice(128, 12), round((at192 - at128) / 64))
+  assert.equal(marginalPrice(128, 20), round((at192 - at128) / 64 + energyBonus(20)))
 })
 
 test('daily fees follow the live electricity and service rates', () => {
