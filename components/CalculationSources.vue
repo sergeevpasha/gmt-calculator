@@ -26,6 +26,18 @@ const upgradeRates = computed(() => Object.entries(props.market.efficiencyUpgrad
   .map(([efficiency, priceUsd]) => ({ efficiency: Number(efficiency), priceUsd }))
   .sort((a, b) => a.efficiency - b.efficiency))
 
+// GoMining's 365-day average payout against today's. Every return on this page is built from today's
+// rate, so this says whether today is running hot or cold. normalizeMarket falls back to today's figure
+// when the API omits the yearly total, which is the one case where there is nothing to compare against.
+const averagePayout = computed(() => {
+  const today = props.market.rewardUsdPerThDay
+  const average = props.market.averageRewardUsdPerThDay
+  if (!average || average === today) {
+    return null
+  }
+  return { average, above: today >= average, deltaPercent: Math.abs((today / average - 1) * 100) }
+})
+
 const endpoints = [
   { label: 'Payout, fees and BTC rate', value: 'POST api.gomining.com/api/nft-income-aggregation/get-last' },
   { label: 'Miner prices', value: 'GET api.gomining.com/api/nft-collection/find-all-generative' },
@@ -75,9 +87,15 @@ const endpoints = [
         <p>GoMining's listed price for 1 TH at {{ market.referenceEfficiency }} W / TH. It publishes full ladders at {{ market.ladders.map(l => l.efficiency).join(' and ') }} W / TH, and every listed size costs exactly what GoMining charges.</p>
       </article>
       <article>
-        <span>Efficiency value</span>
-        <strong>{{ money(energyBonuses[energyBonuses.length - 1].bonus, 3) }} <small>/ TH at 20 W / TH</small></strong>
-        <p>How much less a TH is worth at 20 W / TH than at {{ market.referenceEfficiency }}. GoMining derives this from its power upgrade rates.</p>
+        <span>Payout vs 365-day average</span>
+        <strong v-if="averagePayout">{{ averagePayout.above ? '+' : '−' }}{{ number(averagePayout.deltaPercent, 1) }}<small>%</small></strong>
+        <strong v-else>{{ money(market.rewardUsdPerThDay, 6) }} <small>/ TH / day</small></strong>
+        <p v-if="averagePayout">
+          GoMining paid {{ money(averagePayout.average, 6) }} per TH per day on average over the last 365 days. Every return on this page uses today's rate, which is running {{ averagePayout.above ? 'above' : 'below' }} that.
+        </p>
+        <p v-else>
+          GoMining returned no 365-day total this time, so there is nothing to compare today's payout against.
+        </p>
       </article>
     </div>
 
