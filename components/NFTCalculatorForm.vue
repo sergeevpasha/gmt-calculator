@@ -3,7 +3,7 @@ import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
 const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
-const { nftProfitCalculator, minEfficiency, maxEfficiency, maxPower } = useInvest(() => props.market)
+const { nftProfitCalculator, upgradeOptions, minEfficiency, maxEfficiency, maxPower } = useInvest(() => props.market)
 const lowestEfficiency = computed(() => minEfficiency())
 const highestEfficiency = computed(() => maxEfficiency())
 const powerLimit = computed(() => maxPower())
@@ -12,6 +12,7 @@ const selectedNftEfficiency = ref<number | string>(15)
 const selectedNftPower = ref<number | string>(1)
 const nftUserDiscount = ref<number | string>(10)
 const result = ref<ReturnType<typeof nftProfitCalculator> | null>(null)
+const upgrades = ref<ReturnType<typeof upgradeOptions>>([])
 const investment = computed(() => result.value ? result.value.price : 0)
 const error = ref('')
 const isStale = ref(false)
@@ -39,6 +40,7 @@ function calculate () {
   error.value = ''
   calculatedBtcPrice.value = props.btcPrice
   result.value = estimate
+  upgrades.value = upgradeOptions(efficiency, power, discount)
   isStale.value = false
 }
 
@@ -101,6 +103,7 @@ watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate
       :btc-price="calculatedBtcPrice"
       :stale="isStale"
       :reference-efficiency="soldEfficiency"
+      :upgrades="upgrades"
       id-prefix="nft"
       nft
     />

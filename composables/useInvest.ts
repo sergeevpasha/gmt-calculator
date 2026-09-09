@@ -1,6 +1,17 @@
 import { EFFICIENCY_RANGE } from '~/data/gomining'
 import type { EfficiencyLadder, MarketData, MinerPreset } from '~/data/gomining'
 
+export interface UpgradeOption {
+  // Target W/TH level.
+  efficiency: number
+  // What GoMining charges for the upgrade, USD.
+  cost: number
+  // Electricity saved per day at the current discount, USD.
+  savingPerDay: number
+  // Days for the saving to repay the upgrade, or null when it never does.
+  paybackDays: number | null
+}
+
 export interface MiningEstimate {
   // Satoshi per day.
   reward: number
@@ -16,8 +27,6 @@ export interface MiningEstimate {
   listedPrice: number
   // What this efficiency subtracts from the listed price, USD (negative below the reference efficiency).
   efficiencyAdjustment: number
-  // Price of adding one more TH at this size and efficiency, USD.
-  marginalPrice: number
   // Annual return on the investment, %.
   rateOfInvestment: number
   power: number
@@ -136,6 +145,33 @@ export const useInvest = (getMarket: () => MarketData) => {
     return round(priceAt(power + 1, efficiency) - priceAt(power, efficiency))
   }
 
+  // GoMining's published cost to improve a miner's efficiency, summed over the W/TH steps crossed.
+  // Confirmed against its own upgrade quotes: $1.10 per step from 15 to 19, $2.667 from 12 to 14.
+  function efficiencyUpgradeCost (fromEfficiency: number, toEfficiency: number, power: number) {
+    const prices = getMarket().efficiencyUpgradePrices
+    let perTerahash = 0
+    for (let level = toEfficiency; level < fromEfficiency; level++) {
+      perTerahash += prices[level] ?? 0
+    }
+    return round(perTerahash * power)
+  }
+
+  // Every efficiency upgrade open to this miner, what GoMining charges, and what it saves each day.
+  function upgradeOptions (efficiency: number, power: number, userDiscount: number) {
+    const options: UpgradeOption[] = []
+    for (let target = efficiency - 1; target >= minEfficiency(); target--) {
+      const cost = efficiencyUpgradeCost(efficiency, target, power)
+      const savingPerDay = round(powerCost(efficiency, power, userDiscount) - powerCost(target, power, userDiscount))
+      options.push({
+        efficiency: target,
+        cost,
+        savingPerDay,
+        paybackDays: savingPerDay > 0 && cost > 0 ? Math.ceil(cost / savingPerDay) : null
+      })
+    }
+    return options
+  }
+
   function powerCost (energyEfficiency: number, power: number, userDiscount: number) {
     const perTerahash = getMarket().kwhPriceUsd * 24 * energyEfficiency / 1000
     return round((perTerahash - (perTerahash / 100 * userDiscount)) * power)
@@ -170,7 +206,6 @@ export const useInvest = (getMarket: () => MarketData) => {
       price: breakdown.price,
       listedPrice: breakdown.listedPrice,
       efficiencyAdjustment: breakdown.efficiencyAdjustment,
-      marginalPrice: marginalPrice(power, efficiency),
       rateOfInvestment: rateOfInvestment(investment ?? breakdown.price, potentialProfit),
       power,
       efficiency
@@ -210,12 +245,11 @@ export const useInvest = (getMarket: () => MarketData) => {
       price: 0,
       listedPrice: 0,
       efficiencyAdjustment: 0,
-      marginalPrice: 0,
       rateOfInvestment: 0,
       power: 0,
       efficiency: efficiencies[0]
     }
   }
 
-  return { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
+  return { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
 }

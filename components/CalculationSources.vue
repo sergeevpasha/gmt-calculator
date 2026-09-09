@@ -21,6 +21,11 @@ const energyBonuses = computed(() => {
   return rows
 })
 
+// What GoMining charges an owner to improve one TH by one W / TH, best level first.
+const upgradeRates = computed(() => Object.entries(props.market.efficiencyUpgradePrices)
+  .map(([efficiency, priceUsd]) => ({ efficiency: Number(efficiency), priceUsd }))
+  .sort((a, b) => a.efficiency - b.efficiency))
+
 const endpoints = [
   { label: 'Payout, fees and BTC rate', value: 'POST api.gomining.com/api/nft-income-aggregation/get-last' },
   { label: 'Miner prices', value: 'GET api.gomining.com/api/nft-collection/find-all-generative' },
@@ -129,6 +134,27 @@ const endpoints = [
             </tbody>
           </table>
           <h3 class="spaced">
+            Cost to upgrade one TH
+          </h3>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">
+                  To
+                </th>
+                <th scope="col">
+                  Per TH
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in upgradeRates" :key="row.efficiency">
+                <td>{{ row.efficiency }} W / TH</td>
+                <td>{{ money(row.priceUsd, 3) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 class="spaced">
             Endpoints
           </h3>
           <ul class="endpoint-list">
@@ -147,6 +173,7 @@ const endpoints = [
             <li><span>Miner price</span><code>{{ market.ladders.map(l => l.efficiency).join('/') }} W/TH from GoMining's listed ladder; levels between them interpolated; worse levels stepped down by the valuation rate</code></li>
             <li><span>Annual ROI</span><code>net profit × 365 ÷ investment</code></li>
             <li><span>Payback</span><code>investment ÷ net profit</code></li>
+            <li><span>Efficiency upgrade</span><code>sum of the per-TH upgrade rates for every W/TH crossed × TH</code></li>
           </ul>
         </div>
       </div>

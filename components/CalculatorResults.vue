@@ -7,12 +7,12 @@ interface MiningResult {
   price: number
   listedPrice: number
   efficiencyAdjustment: number
-  marginalPrice: number
   rateOfInvestment: number
   power: number
   efficiency: number
 }
-const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, referenceEfficiency: number, nft?: boolean }>()
+interface UpgradeOption { efficiency: number, cost: number, savingPerDay: number, paybackDays: number | null }
+const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, referenceEfficiency: number, upgrades?: UpgradeOption[], nft?: boolean }>()
 const formatPrecise = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
 const period = ref(30)
 const periods = [{ label: 'Day', days: 1 }, { label: 'Month', days: 30 }, { label: 'Year', days: 365 }]
@@ -115,8 +115,6 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
             <span>Energy efficiency</span><strong>{{ result.efficiency }} <small>W / TH</small></strong>
           </div><div class="detail-line muted-detail">
             <span>Miner price</span><strong>{{ formatMoney(result.price) }}</strong>
-          </div><div class="detail-line muted-detail">
-            <span>Next TH costs</span><span>{{ formatPrecise(result.marginalPrice) }}</span>
           </div>
         </div>
         <div class="detail-card">
@@ -131,6 +129,43 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
           </div>
         </div>
       </div>
+      <div v-if="nft && upgrades && upgrades.length" class="upgrade-card">
+        <div class="detail-heading">
+          <span class="detail-icon"><AppIcon name="bolt" /></span><h3>Worth upgrading?</h3>
+        </div>
+        <p class="upgrade-intro">
+          GoMining's price to improve this miner's efficiency, and how long the electricity saving takes to repay it.
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">
+                  To
+                </th>
+                <th scope="col">
+                  Upgrade cost
+                </th>
+                <th scope="col">
+                  Saves / day
+                </th>
+                <th scope="col">
+                  Pays back in
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="option in upgrades" :key="option.efficiency">
+                <td>{{ option.efficiency }} W / TH</td>
+                <td>{{ formatMoney(option.cost) }}</td>
+                <td>{{ formatPrecise(option.savingPerDay) }}</td>
+                <td>{{ option.paybackDays ? option.paybackDays.toLocaleString('en-US') + ' days' : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <p class="results-assumption">
         {{ period === 30 ? 'Monthly estimates use 30 days. ' : '' }}Annual estimates use 365 days, without reinvestment.
       </p>
@@ -192,6 +227,14 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
 .detail-line strong { font-weight: 550; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .detail-line small { color: var(--dim); font-weight: 400; font-size: 12px; margin-left: 3px; }
 .muted-detail { border-top: 1px solid var(--border); margin-top: 13px; padding-top: 10px; flex-wrap: wrap; gap: 4px; font-size: 12px; color: var(--muted); }
+.upgrade-card { margin-top: 17px; border: 1px solid var(--border); background: var(--panel); border-radius: 14px; padding: 17px 20px; }
+.upgrade-intro { font-size: 12px; color: var(--dim); line-height: 1.6; margin-bottom: 13px; }
+.upgrade-card .table-scroll { max-height: 220px; overflow: auto; }
+.upgrade-card table { width: 100%; min-width: 280px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.upgrade-card th { text-align: left; font-weight: 400; color: var(--dim); padding-bottom: 6px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel); }
+.upgrade-card td { padding: 6px 0; color: var(--muted); border-bottom: 1px solid #22252f; }
+.upgrade-card td:first-child { color: #cccadb; }
+.upgrade-card th + th, .upgrade-card td + td { text-align: right; }
 .results-assumption { font-size: 12px; color: var(--dim); margin-top: 12px; }
 .results-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 90px 30px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
 .results-empty h3 { font-size: 18px; margin: 20px 0 8px; }

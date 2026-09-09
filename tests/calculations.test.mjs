@@ -26,7 +26,7 @@ function loadModule (filename) {
 
 const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -131,6 +131,35 @@ test('price breakdown adds up and the marginal follows the curve at that efficie
   // A worse efficiency must always make the next TH cheaper.
   assert.ok(marginalPrice(128, 20) < marginalPrice(128, 15))
   assert.ok(marginalPrice(128, 15) < marginalPrice(128, 12))
+})
+
+test('efficiency upgrade costs match GoMinings own quotes for a 128 TH miner at 20 W/TH', () => {
+  // Measured in the GoMining app on 2026-09-09, upgrade dialog on miner #3876.
+  const quoted = { 19: 140.8, 18: 281.6, 17: 422.4, 16: 563.2, 15: 704, 14: 1045.376, 13: 1386.752, 12: 1728.128 }
+  for (const [target, total] of Object.entries(quoted)) {
+    assert.ok(Math.abs(efficiencyUpgradeCost(20, Number(target), 128) - total) < 0.01,
+      `20 -> ${target} W/TH should cost ${total}, got ${efficiencyUpgradeCost(20, Number(target), 128)}`)
+  }
+  assert.equal(efficiencyUpgradeCost(20, 20, 128), 0)
+})
+
+test('upgrade options list every better level with a payback', () => {
+  const options = upgradeOptions(20, 128, 0)
+  assert.equal(options.length, 8)
+  assert.equal(options[0].efficiency, 19)
+  assert.equal(options[options.length - 1].efficiency, 12)
+  for (const option of options) {
+    assert.ok(option.cost > 0)
+    assert.ok(option.savingPerDay > 0, 'a better efficiency must save electricity')
+    assert.ok(option.paybackDays > 0)
+  }
+  // Cost and saving both grow as the target improves.
+  for (let i = 1; i < options.length; i++) {
+    assert.ok(options[i].cost > options[i - 1].cost)
+    assert.ok(options[i].savingPerDay > options[i - 1].savingPerDay)
+  }
+  // A miner already at the best level has nothing to upgrade to.
+  assert.equal(upgradeOptions(12, 128, 0).length, 0)
 })
 
 test('daily fees follow the live electricity and service rates', () => {
