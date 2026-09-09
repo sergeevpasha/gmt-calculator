@@ -22,7 +22,7 @@ function calculate () {
   const power = Number(selectedNftPower.value)
   const discount = Number(nftUserDiscount.value)
   if (![efficiency, power, discount].every(Number.isFinite) || !Number.isInteger(efficiency) || efficiency < lowestEfficiency.value || efficiency > baseEfficiency.value || !Number.isInteger(power) || power < 1 || power > powerLimit.value || nftUserDiscount.value === '' || discount < 0 || discount > 100) {
-    error.value = `Use an efficiency from ${lowestEfficiency.value} to your base level, power from 1 to ${powerLimit.value.toLocaleString('en-US')} TH, and a discount from 0 to 100%.`
+    error.value = `Use an efficiency from ${lowestEfficiency.value} to ${baseEfficiency.value} W / TH (your base level), power from 1 to ${powerLimit.value.toLocaleString('en-US')} TH, and a discount from 0 to 100%.`
     return
   }
   if (!Number.isFinite(props.btcPrice) || props.btcPrice <= 0 || props.btcPrice > 10000000 || !Number.isFinite(props.reward) || props.reward < 0 || props.reward > 1000000) {
@@ -93,7 +93,7 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
         <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
       </p>
       <div class="calculation-tip">
-        <AppIcon name="bolt" /><p><strong>Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. Upgrades go down to {{ lowestEfficiency }} W / TH.</p>
+        <AppIcon name="bolt" /><p><strong>Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. GoMining sells {{ efficiencyOptions.join(', ') }} W / TH miners and upgrades go down to {{ lowestEfficiency }} W / TH.</p>
       </div>
     </form>
     <CalculatorResults

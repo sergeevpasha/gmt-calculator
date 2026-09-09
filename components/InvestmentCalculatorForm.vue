@@ -106,7 +106,7 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
         <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
       </p>
       <div class="calculation-tip">
-        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We compare GoMining's current miner prices and efficiency upgrades to find the best daily return for your budget.</p>
+        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We compare GoMining's {{ baseEfficiencies().join(', ') }} W / TH miner prices and efficiency upgrades to find the best daily return for your budget.</p>
       </div>
     </form>
     <CalculatorResults :result="result" :investment="calculatedInvestment" :btc-price="calculatedBtcPrice" :stale="isStale" id-prefix="investment" />

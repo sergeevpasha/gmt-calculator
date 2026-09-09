@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-09T09:12:00.000Z",
+  "fetchedAt": "2026-09-09T09:55:00.000Z",
   "income": {
     "createdAt": "2026-09-09T03:31:04.474Z",
     "btcCourseInUsd": 78862.65350442,
@@ -10,252 +10,1420 @@
     "c3ValuePerThToday": 0,
     "c4ValuePerThToday": 0
   },
-  "presets": [
+  "collections": [
     {
-      "power": 1,
-      "energyEfficiency": 15,
-      "priceUsdt": 14.99,
-      "level": 1
-    },
-    {
-      "power": 2,
-      "energyEfficiency": 15,
-      "priceUsdt": 27.99,
-      "level": 2
-    },
-    {
-      "power": 4,
-      "energyEfficiency": 15,
-      "priceUsdt": 55.99,
-      "level": 3
-    },
-    {
-      "power": 8,
-      "energyEfficiency": 15,
-      "priceUsdt": 109.99,
-      "level": 4
-    },
-    {
-      "power": 16,
-      "energyEfficiency": 15,
-      "priceUsdt": 216.99,
-      "level": 5
-    },
-    {
-      "power": 32,
-      "energyEfficiency": 15,
-      "priceUsdt": 429.99,
-      "level": 6
-    },
-    {
-      "power": 48,
-      "energyEfficiency": 15,
-      "priceUsdt": 637.99,
-      "level": 7
-    },
-    {
-      "power": 64,
-      "energyEfficiency": 15,
-      "priceUsdt": 841.99,
-      "level": 8
-    },
-    {
-      "power": 96,
-      "energyEfficiency": 15,
-      "priceUsdt": 1250.99,
-      "level": 9
-    },
-    {
-      "power": 128,
-      "energyEfficiency": 15,
-      "priceUsdt": 1650.99,
-      "level": 10
-    },
-    {
-      "power": 192,
-      "energyEfficiency": 15,
-      "priceUsdt": 2451.99,
-      "level": 11
-    },
-    {
-      "power": 256,
-      "energyEfficiency": 15,
-      "priceUsdt": 3235.99,
-      "level": 12
-    },
-    {
-      "power": 384,
-      "energyEfficiency": 15,
-      "priceUsdt": 4804.99,
-      "level": 13
-    },
-    {
-      "power": 512,
-      "energyEfficiency": 15,
-      "priceUsdt": 6342.99,
-      "level": 14
-    },
-    {
-      "power": 768,
-      "energyEfficiency": 15,
-      "priceUsdt": 9419.99,
-      "level": 15
-    },
-    {
-      "power": 1024,
-      "energyEfficiency": 15,
-      "priceUsdt": 12434.99,
-      "level": 16
-    },
-    {
-      "power": 1536,
-      "energyEfficiency": 15,
-      "priceUsdt": 18465.99,
-      "level": 17
-    },
-    {
-      "power": 2560,
-      "energyEfficiency": 15,
-      "priceUsdt": 30469.99,
-      "level": 18
-    },
-    {
-      "power": 3584,
-      "energyEfficiency": 15,
-      "priceUsdt": 42233.99,
-      "level": 19
-    },
-    {
-      "power": 5000,
-      "energyEfficiency": 15,
-      "priceUsdt": 58333.99,
-      "level": 20
-    },
-    {
+      "id": 746,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 0.75,
       "energyEfficiency": 12,
-      "priceUsdt": 12.99,
-      "level": 0
+      "value": 12.99
     },
     {
+      "id": 667,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 1,
       "energyEfficiency": 12,
-      "priceUsdt": 18.99,
-      "level": 1
+      "value": 18.99
     },
     {
+      "id": 671,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 2,
       "energyEfficiency": 12,
-      "priceUsdt": 37.79,
-      "level": 2
+      "value": 37.79
     },
     {
+      "id": 675,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 4,
       "energyEfficiency": 12,
-      "priceUsdt": 75.19,
-      "level": 3
+      "value": 75.19
     },
     {
+      "id": 680,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 8,
       "energyEfficiency": 12,
-      "priceUsdt": 149.99,
-      "level": 4
+      "value": 149.99
     },
     {
+      "id": 686,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 16,
       "energyEfficiency": 12,
-      "priceUsdt": 297.99,
-      "level": 5
+      "value": 297.99
     },
     {
+      "id": 693,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 32,
       "energyEfficiency": 12,
-      "priceUsdt": 592.99,
-      "level": 6
+      "value": 592.99
     },
     {
+      "id": 697,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 48,
       "energyEfficiency": 12,
-      "priceUsdt": 884.99,
-      "level": 7
+      "value": 884.99
     },
     {
+      "id": 698,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 64,
       "energyEfficiency": 12,
-      "priceUsdt": 1172.99,
-      "level": 8
+      "value": 1172.99
     },
     {
+      "id": 701,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 96,
       "energyEfficiency": 12,
-      "priceUsdt": 1750.99,
-      "level": 9
+      "value": 1750.99
     },
     {
+      "id": 704,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 128,
       "energyEfficiency": 12,
-      "priceUsdt": 2322.99,
-      "level": 10
+      "value": 2322.99
     },
     {
+      "id": 707,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 192,
       "energyEfficiency": 12,
-      "priceUsdt": 3465.99,
-      "level": 11
+      "value": 3465.99
     },
     {
+      "id": 711,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 256,
       "energyEfficiency": 12,
-      "priceUsdt": 4597.99,
-      "level": 12
+      "value": 4597.99
     },
     {
+      "id": 714,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 384,
       "energyEfficiency": 12,
-      "priceUsdt": 6861.99,
-      "level": 13
+      "value": 6861.99
     },
     {
+      "id": 716,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 512,
       "energyEfficiency": 12,
-      "priceUsdt": 9102.99,
-      "level": 14
+      "value": 9102.99
     },
     {
+      "id": 720,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 768,
       "energyEfficiency": 12,
-      "priceUsdt": 13584.99,
-      "level": 15
+      "value": 13584.99
     },
     {
+      "id": 723,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 1024,
       "energyEfficiency": 12,
-      "priceUsdt": 18020.99,
-      "level": 16
+      "value": 18020.99
     },
     {
+      "id": 725,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 1536,
       "energyEfficiency": 12,
-      "priceUsdt": 26894.99,
-      "level": 17
+      "value": 26894.99
     },
     {
+      "id": 730,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 2560,
       "energyEfficiency": 12,
-      "priceUsdt": 44597.99,
-      "level": 18
+      "value": 44597.99
     },
     {
+      "id": 731,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 3584,
       "energyEfficiency": 12,
-      "priceUsdt": 62121.99,
-      "level": 19
+      "value": 62121.99
     },
     {
+      "id": 736,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
       "power": 5000,
       "energyEfficiency": 12,
-      "priceUsdt": 86228.99,
-      "level": 20
+      "value": 86228.99
+    },
+    {
+      "id": 401,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1,
+      "energyEfficiency": 15,
+      "value": 14.99
+    },
+    {
+      "id": 400,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2,
+      "energyEfficiency": 15,
+      "value": 27.99
+    },
+    {
+      "id": 399,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 4,
+      "energyEfficiency": 15,
+      "value": 55.99
+    },
+    {
+      "id": 398,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 8,
+      "energyEfficiency": 15,
+      "value": 109.99
+    },
+    {
+      "id": 397,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 16,
+      "energyEfficiency": 15,
+      "value": 216.99
+    },
+    {
+      "id": 396,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 32,
+      "energyEfficiency": 15,
+      "value": 429.99
+    },
+    {
+      "id": 395,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 48,
+      "energyEfficiency": 15,
+      "value": 637.99
+    },
+    {
+      "id": 394,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 64,
+      "energyEfficiency": 15,
+      "value": 841.99
+    },
+    {
+      "id": 393,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 96,
+      "energyEfficiency": 15,
+      "value": 1250.99
+    },
+    {
+      "id": 392,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 128,
+      "energyEfficiency": 15,
+      "value": 1650.99
+    },
+    {
+      "id": 391,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 192,
+      "energyEfficiency": 15,
+      "value": 2451.99
+    },
+    {
+      "id": 390,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 256,
+      "energyEfficiency": 15,
+      "value": 3235.99
+    },
+    {
+      "id": 389,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 384,
+      "energyEfficiency": 15,
+      "value": 4804.99
+    },
+    {
+      "id": 388,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 512,
+      "energyEfficiency": 15,
+      "value": 6342.99
+    },
+    {
+      "id": 387,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 768,
+      "energyEfficiency": 15,
+      "value": 9419.99
+    },
+    {
+      "id": 386,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1024,
+      "energyEfficiency": 15,
+      "value": 12434.99
+    },
+    {
+      "id": 385,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1536,
+      "energyEfficiency": 15,
+      "value": 18465.99
+    },
+    {
+      "id": 384,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2560,
+      "energyEfficiency": 15,
+      "value": 30469.99
+    },
+    {
+      "id": 383,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 3584,
+      "energyEfficiency": 15,
+      "value": 42233.99
+    },
+    {
+      "id": 382,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 5000,
+      "energyEfficiency": 15,
+      "value": 58333.99
+    },
+    {
+      "id": 244,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1,
+      "energyEfficiency": 20,
+      "value": 13.99
+    },
+    {
+      "id": 245,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2,
+      "energyEfficiency": 20,
+      "value": 26.99
+    },
+    {
+      "id": 246,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 4,
+      "energyEfficiency": 20,
+      "value": 52.99
+    },
+    {
+      "id": 247,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 8,
+      "energyEfficiency": 20,
+      "value": 103.99
+    },
+    {
+      "id": 248,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 16,
+      "energyEfficiency": 20,
+      "value": 204.99
+    },
+    {
+      "id": 249,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 32,
+      "energyEfficiency": 20,
+      "value": 404.99
+    },
+    {
+      "id": 250,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 48,
+      "energyEfficiency": 20,
+      "value": 601.99
+    },
+    {
+      "id": 251,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 64,
+      "energyEfficiency": 20,
+      "value": 793.99
+    },
+    {
+      "id": 252,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 96,
+      "energyEfficiency": 20,
+      "value": 1178.99
+    },
+    {
+      "id": 253,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 128,
+      "energyEfficiency": 20,
+      "value": 1556.99
+    },
+    {
+      "id": 254,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 192,
+      "energyEfficiency": 20,
+      "value": 2310.99
+    },
+    {
+      "id": 255,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 256,
+      "energyEfficiency": 20,
+      "value": 3050.99
+    },
+    {
+      "id": 256,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 384,
+      "energyEfficiency": 20,
+      "value": 4530.99
+    },
+    {
+      "id": 257,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 512,
+      "energyEfficiency": 20,
+      "value": 5980.99
+    },
+    {
+      "id": 258,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 768,
+      "energyEfficiency": 20,
+      "value": 8881.99
+    },
+    {
+      "id": 259,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1024,
+      "energyEfficiency": 20,
+      "value": 11723.99
+    },
+    {
+      "id": 260,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1536,
+      "energyEfficiency": 20,
+      "value": 17410.99
+    },
+    {
+      "id": 261,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2560,
+      "energyEfficiency": 20,
+      "value": 28728.99
+    },
+    {
+      "id": 262,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 3584,
+      "energyEfficiency": 20,
+      "value": 39820.99
+    },
+    {
+      "id": 263,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 5000,
+      "energyEfficiency": 20,
+      "value": 54999.99
+    },
+    {
+      "id": 178,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1,
+      "energyEfficiency": 28,
+      "value": 18.99
+    },
+    {
+      "id": 179,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2,
+      "energyEfficiency": 28,
+      "value": 35.99
+    },
+    {
+      "id": 180,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 4,
+      "energyEfficiency": 28,
+      "value": 70.99
+    },
+    {
+      "id": 181,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 8,
+      "energyEfficiency": 28,
+      "value": 140.99
+    },
+    {
+      "id": 182,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 16,
+      "energyEfficiency": 28,
+      "value": 279.99
+    },
+    {
+      "id": 183,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 32,
+      "energyEfficiency": 28,
+      "value": 549.99
+    },
+    {
+      "id": 235,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 48,
+      "energyEfficiency": 28,
+      "value": 819.99
+    },
+    {
+      "id": 184,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 64,
+      "energyEfficiency": 28,
+      "value": 1082.99
+    },
+    {
+      "id": 185,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 96,
+      "energyEfficiency": 28,
+      "value": 1607.99
+    },
+    {
+      "id": 186,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 128,
+      "energyEfficiency": 28,
+      "value": 2121.99
+    },
+    {
+      "id": 187,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 192,
+      "energyEfficiency": 28,
+      "value": 3150.99
+    },
+    {
+      "id": 188,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 256,
+      "energyEfficiency": 28,
+      "value": 4159.99
+    },
+    {
+      "id": 189,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 384,
+      "energyEfficiency": 28,
+      "value": 6176.99
+    },
+    {
+      "id": 190,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 512,
+      "energyEfficiency": 28,
+      "value": 8153.99
+    },
+    {
+      "id": 191,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 768,
+      "energyEfficiency": 28,
+      "value": 12108.99
+    },
+    {
+      "id": 192,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1024,
+      "energyEfficiency": 28,
+      "value": 15984.99
+    },
+    {
+      "id": 193,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1536,
+      "energyEfficiency": 28,
+      "value": 23738.99
+    },
+    {
+      "id": 194,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2560,
+      "energyEfficiency": 28,
+      "value": 39169.99
+    },
+    {
+      "id": 195,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 3584,
+      "energyEfficiency": 28,
+      "value": 54292.99
+    },
+    {
+      "id": 196,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 5000,
+      "energyEfficiency": 28,
+      "value": 74989.99
+    },
+    {
+      "id": 117,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1,
+      "energyEfficiency": 35,
+      "value": 9.99
+    },
+    {
+      "id": 118,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2,
+      "energyEfficiency": 35,
+      "value": 19.99
+    },
+    {
+      "id": 119,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 4,
+      "energyEfficiency": 35,
+      "value": 38.99
+    },
+    {
+      "id": 120,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 8,
+      "energyEfficiency": 35,
+      "value": 75.99
+    },
+    {
+      "id": 121,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 16,
+      "energyEfficiency": 35,
+      "value": 150.99
+    },
+    {
+      "id": 122,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 32,
+      "energyEfficiency": 35,
+      "value": 297.99
+    },
+    {
+      "id": 123,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 48,
+      "energyEfficiency": 35,
+      "value": 442.99
+    },
+    {
+      "id": 124,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 64,
+      "energyEfficiency": 35,
+      "value": 583.99
+    },
+    {
+      "id": 125,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 96,
+      "energyEfficiency": 35,
+      "value": 866.99
+    },
+    {
+      "id": 126,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 128,
+      "energyEfficiency": 35,
+      "value": 1144.99
+    },
+    {
+      "id": 127,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 192,
+      "energyEfficiency": 35,
+      "value": 1699.99
+    },
+    {
+      "id": 128,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 256,
+      "energyEfficiency": 35,
+      "value": 2243.99
+    },
+    {
+      "id": 129,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 384,
+      "energyEfficiency": 35,
+      "value": 3331.99
+    },
+    {
+      "id": 130,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 512,
+      "energyEfficiency": 35,
+      "value": 4398.99
+    },
+    {
+      "id": 131,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 768,
+      "energyEfficiency": 35,
+      "value": 6531.99
+    },
+    {
+      "id": 132,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1024,
+      "energyEfficiency": 35,
+      "value": 8622.99
+    },
+    {
+      "id": 133,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 1536,
+      "energyEfficiency": 35,
+      "value": 12804.99
+    },
+    {
+      "id": 134,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 2560,
+      "energyEfficiency": 35,
+      "value": 21128.99
+    },
+    {
+      "id": 135,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 3584,
+      "energyEfficiency": 35,
+      "value": 29285.99
+    },
+    {
+      "id": 136,
+      "name": "The Mine Box",
+      "type": "generative",
+      "saleNftStatus": "sale",
+      "test": false,
+      "network": null,
+      "metaData": {
+        "type": "general"
+      },
+      "power": 5000,
+      "energyEfficiency": 35,
+      "value": 40448.99
     }
   ],
   "upgrades": {

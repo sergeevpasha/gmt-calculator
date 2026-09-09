@@ -1,29 +1,47 @@
 // Refreshes data/gomining-snapshot.json from GoMining's public API.
-// Run inside the container: docker compose exec -T dashboard node scripts/update-market-snapshot.mjs
+// Run inside the container: docker compose exec -T dashboard yarn update-snapshot
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const API_URL = 'https://api.gomining.com/api'
 
-async function request (path, method = 'GET') {
+async function request (path, body) {
   const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: { accept: 'application/json', ...(method === 'POST' ? { 'content-type': 'application/json' } : {}) },
-    body: method === 'POST' ? '{}' : undefined,
-    signal: AbortSignal.timeout(15000)
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20000)
   })
   if (!response.ok) {
-    throw new Error(`${method} ${path} responded with ${response.status}`)
+    throw new Error(`POST ${path} responded with ${response.status}`)
   }
   return (await response.json()).data
 }
 
-const [income, presets, upgrades] = await Promise.all([
-  request('/nft-income-aggregation/get-last', 'POST'),
-  request('/nft-collection/find-all-generative'),
-  request('/nft/get-upgrade-rate', 'POST')
+const [income, catalogue, upgrades] = await Promise.all([
+  request('/nft-income-aggregation/get-last', {}),
+  request('/nft-collection/index', { filters: { type: 'generative', saleNftStatus: 'sale' } }),
+  request('/nft/get-upgrade-rate', {})
 ])
+
+// Keep GoMining's own price ladders (mirrors isPrimaryLadder in data/gomining.ts, without the efficiency range,
+// so the snapshot stays a raw record and the range rule lives in one place).
+const collections = catalogue.array
+  .filter(collection => !collection.test && collection.network === null && collection.metaData?.type === 'general')
+  .map(collection => ({
+    id: collection.id,
+    name: collection.name,
+    type: collection.type,
+    saleNftStatus: collection.saleNftStatus,
+    test: collection.test,
+    network: collection.network,
+    metaData: { type: collection.metaData.type },
+    power: collection.power,
+    energyEfficiency: collection.energyEfficiency,
+    value: collection.value
+  }))
+  .sort((a, b) => a.energyEfficiency - b.energyEfficiency || a.power - b.power)
 
 const snapshot = {
   fetchedAt: new Date().toISOString(),
@@ -37,13 +55,11 @@ const snapshot = {
     c3ValuePerThToday: income.c3ValuePerThToday ?? 0,
     c4ValuePerThToday: income.c4ValuePerThToday ?? 0
   },
-  presets: presets.array
-    .map(preset => ({ power: preset.power, energyEfficiency: preset.energyEfficiency, priceUsdt: preset.priceUsdt, level: preset.level }))
-    .sort((a, b) => b.energyEfficiency - a.energyEfficiency || a.power - b.power),
+  collections,
   upgrades: { energyEfficiencyUpgradePriceConfig: upgrades.energyEfficiencyUpgradePriceConfig }
 }
 
 const file = resolve(fileURLToPath(new URL('..', import.meta.url)), 'data/gomining-snapshot.json')
 writeFileSync(file, `${JSON.stringify(snapshot, null, 2)}\n`)
 // eslint-disable-next-line no-console
-console.log(`Saved ${snapshot.presets.length} miner presets, ${snapshot.upgrades.energyEfficiencyUpgradePriceConfig.length} upgrade steps and the ${income.createdAt.slice(0, 10)} payout to ${file}`)
+console.log(`Saved ${collections.length} catalogue rows, ${snapshot.upgrades.energyEfficiencyUpgradePriceConfig.length} upgrade steps and the ${income.createdAt.slice(0, 10)} payout to ${file}`)

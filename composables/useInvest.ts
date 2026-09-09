@@ -20,10 +20,12 @@ export interface MiningEstimate {
   baseEfficiency: number
 }
 
+const presetCache = new WeakMap<MarketData, Map<number, MinerPreset[]>>()
+
 export const useInvest = (getMarket: () => MarketData) => {
   const round = (value: number) => parseFloat(value.toFixed(2))
 
-  // Efficiencies GoMining currently sells, best (lowest W/TH) last.
+  // Efficiencies GoMining sells on the primary market, least efficient first.
   function baseEfficiencies () {
     return [...new Set(getMarket().miners.map(miner => miner.efficiency))].sort((a, b) => b - a)
   }
@@ -32,12 +34,27 @@ export const useInvest = (getMarket: () => MarketData) => {
     return Math.min(...baseEfficiencies(), ...Object.keys(getMarket().efficiencyUpgradePrices).map(Number))
   }
 
+  function maxEfficiency () {
+    return Math.max(...baseEfficiencies())
+  }
+
   function maxPower () {
     return Math.max(...getMarket().miners.map(miner => miner.power))
   }
 
   function presets (baseEfficiency: number): MinerPreset[] {
-    return getMarket().miners.filter(miner => miner.efficiency === baseEfficiency).sort((a, b) => a.power - b.power)
+    const market = getMarket()
+    let byEfficiency = presetCache.get(market)
+    if (!byEfficiency) {
+      byEfficiency = new Map()
+      presetCache.set(market, byEfficiency)
+    }
+    let list = byEfficiency.get(baseEfficiency)
+    if (!list) {
+      list = market.miners.filter(miner => miner.efficiency === baseEfficiency).sort((a, b) => a.power - b.power)
+      byEfficiency.set(baseEfficiency, list)
+    }
+    return list
   }
 
   // Price of a new miner, interpolated between GoMining's presets so preset sizes cost exactly the store price.
@@ -111,11 +128,12 @@ export const useInvest = (getMarket: () => MarketData) => {
     }
   }
 
-  function nftProfitCalculator (efficiency: number, power: number, userDiscount: number, satoshiReward: number, btcPrice: number, baseEfficiency: number = baseEfficiencies()[0]) {
+  function nftProfitCalculator (efficiency: number, power: number, userDiscount: number, satoshiReward: number, btcPrice: number, baseEfficiency: number = maxEfficiency()) {
     return estimate(efficiency, power, userDiscount, satoshiReward, btcPrice, baseEfficiency)
   }
 
-  // Finds the miner with the highest daily profit for the budget. A base efficiency of 0 compares every efficiency GoMining sells.
+  // Finds the miner with the highest daily profit for the budget. A base efficiency of 0 compares every efficiency
+  // GoMining sells, including buying a cheaper base level and upgrading it. Equal profits prefer the cheaper setup.
   function bestOption (moneyToSpend: number, btcPrice: number, satoshiReward: number, userDiscount: number, baseEfficiency: number = 0): MiningEstimate {
     const bases = baseEfficiency ? [baseEfficiency] : baseEfficiencies()
     const lowestEfficiency = minEfficiency()
@@ -130,12 +148,13 @@ export const useInvest = (getMarket: () => MarketData) => {
         }
 
         for (let power = 1; power <= powerLimit; power++) {
-          if (minerPrice(power, base) + round(upgradePerTerahash * power) > moneyToSpend) {
+          const cost = minerPrice(power, base) + round(upgradePerTerahash * power)
+          if (cost > moneyToSpend) {
             break
           }
 
           const candidate = estimate(efficiency, power, userDiscount, satoshiReward, btcPrice, base, moneyToSpend)
-          if (!best || candidate.profit > best.profit) {
+          if (!best || candidate.profit > best.profit || (candidate.profit === best.profit && cost < best.powerCost + best.efficiencyCost)) {
             best = candidate
           }
         }
@@ -156,5 +175,5 @@ export const useInvest = (getMarket: () => MarketData) => {
     }
   }
 
-  return { nftProfitCalculator, bestOption, minerPrice, efficiencyUpgrade, baseEfficiencies, minEfficiency, maxPower }
+  return { nftProfitCalculator, bestOption, minerPrice, efficiencyUpgrade, baseEfficiencies, minEfficiency, maxEfficiency, maxPower }
 }

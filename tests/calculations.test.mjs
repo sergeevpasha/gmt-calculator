@@ -24,9 +24,9 @@ function loadModule (filename) {
   return exports
 }
 
-const { marketSnapshot, normalizeMarket } = loadModule('data/gomining')
+const { EFFICIENCY_RANGE, isPrimaryLadder, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, efficiencyUpgrade, baseEfficiencies, minEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, minerPrice, efficiencyUpgrade, baseEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -43,21 +43,40 @@ test('the bundled GoMining snapshot normalizes into calculator inputs', () => {
   assert.equal(marketSnapshot.kwhPriceUsd, 0.05)
   assert.equal(marketSnapshot.serviceUsdPerThDay, 0.0089)
   // Arrays cross the vm realm boundary, so compare their contents rather than their prototypes.
-  assert.equal(baseEfficiencies().join(), '15,12')
-  assert.equal(minEfficiency(), 12)
+  assert.equal(baseEfficiencies().join(), '20,15,12')
+  assert.equal(minEfficiency(), EFFICIENCY_RANGE.min)
+  assert.equal(maxEfficiency(), EFFICIENCY_RANGE.max)
   assert.equal(maxPower(), 5000)
+  assert.ok(Object.keys(marketSnapshot.efficiencyUpgradePrices).every(level => level >= 12 && level < 20))
 })
 
 test('malformed API responses are rejected instead of producing zero prices', () => {
   const snapshot = JSON.parse(readFileSync(resolve(root, 'data/gomining-snapshot.json'), 'utf8'))
   assert.throws(() => normalizeMarket({ ...snapshot, income: { ...snapshot.income, btcCourseInUsd: 0 } }, 'live'))
-  assert.throws(() => normalizeMarket({ ...snapshot, presets: [] }, 'live'))
+  assert.throws(() => normalizeMarket({ ...snapshot, collections: [] }, 'live'))
   assert.throws(() => normalizeMarket({ ...snapshot, upgrades: { energyEfficiencyUpgradePriceConfig: [] } }, 'live'))
   assert.equal(normalizeMarket(snapshot, 'live').source, 'live')
 })
 
+test('only primary-market ladders between 12 and 20 W/TH are priced', () => {
+  const row = { id: 1, name: 'The Mine Box', type: 'generative', saleNftStatus: 'sale', test: false, network: null, metaData: { type: 'general' }, power: 1, energyEfficiency: 20, value: 13.99 }
+  assert.ok(isPrimaryLadder(row))
+  assert.ok(!isPrimaryLadder({ ...row, network: 'ETH' }))
+  assert.ok(!isPrimaryLadder({ ...row, metaData: { type: 'paywall' } }))
+  assert.ok(!isPrimaryLadder({ ...row, saleNftStatus: 'coming-soon' }))
+  assert.ok(!isPrimaryLadder({ ...row, type: 'default' }))
+  assert.ok(!isPrimaryLadder({ ...row, energyEfficiency: 28 }))
+  assert.ok(!isPrimaryLadder({ ...row, energyEfficiency: 11 }))
+  const snapshot = JSON.parse(readFileSync(resolve(root, 'data/gomining-snapshot.json'), 'utf8'))
+  const market = normalizeMarket({ ...snapshot, collections: [row, { ...row, id: 2, value: 12.49 }, { ...row, id: 3, network: 'BSC', value: 1 }] }, 'live')
+  assert.equal(market.miners.length, 1)
+  assert.equal(market.miners[0].priceUsd, 12.49)
+})
+
 test('preset sizes cost exactly the GoMining store price and other sizes interpolate', () => {
   assert.equal(minerPrice(1, 15), 14.99)
+  assert.equal(minerPrice(1, 20), 13.99)
+  assert.equal(minerPrice(5000, 20), 54999.99)
   assert.equal(minerPrice(8, 15), 109.99)
   assert.equal(minerPrice(5000, 15), 58333.99)
   assert.equal(minerPrice(2, 12), 37.79)
@@ -70,6 +89,10 @@ test('efficiency upgrades sum the per-step prices down to the target level', () 
   assert.equal(efficiencyUpgrade(15, 15), 0)
   assert.equal(efficiencyUpgrade(15, 12), round(3 * marketSnapshot.efficiencyUpgradePrices[12]))
   assert.equal(efficiencyUpgrade(20, 15), round(5 * marketSnapshot.efficiencyUpgradePrices[15]))
+  assert.equal(efficiencyUpgrade(20, 12), round(5 * marketSnapshot.efficiencyUpgradePrices[15] + 3 * marketSnapshot.efficiencyUpgradePrices[12]))
+  const upgraded = nftProfitCalculator(17, 10, 0, REWARD, BTC_PRICE, 20)
+  assert.equal(upgraded.powerCost, round(103.99 + (204.99 - 103.99) * 2 / 8))
+  assert.equal(upgraded.efficiencyCost, round(3 * marketSnapshot.efficiencyUpgradePrices[17] * 10))
   const result = nftProfitCalculator(12, 10, 0, REWARD, BTC_PRICE, 15)
   assert.equal(result.powerCost, minerPrice(10, 15))
   assert.equal(result.efficiencyCost, round(efficiencyUpgrade(15, 12) * 10))
@@ -84,11 +107,11 @@ test('daily fees follow the live electricity and service rates', () => {
 })
 
 test('investment results reconcile with rewards, fees, ROI, and the budget', () => {
-  for (const baseEfficiency of [0, 15, 12]) {
+  for (const baseEfficiency of [0, 20, 15, 12]) {
     const result = bestOption(1000, BTC_PRICE, REWARD, 10, baseEfficiency)
     assertAccounting(result, BTC_PRICE)
     assert.ok(result.powerCost + result.efficiencyCost <= 1000)
-    assert.ok(result.efficiency >= 12 && result.efficiency <= result.baseEfficiency)
+    assert.ok(result.efficiency >= EFFICIENCY_RANGE.min && result.efficiency <= result.baseEfficiency && result.baseEfficiency <= EFFICIENCY_RANGE.max)
     assert.ok(baseEfficiency === 0 || result.baseEfficiency === baseEfficiency)
     assert.ok(Math.abs(result.rateOfInvestment - result.profit * 365 / 1000 * 100) < 0.011)
   }
@@ -104,7 +127,7 @@ test('comparing every efficiency is at least as profitable as fixing one', () =>
 test('recommended profit matches an exhaustive affordable-miner comparison', () => {
   let expectedProfit = -Infinity
   for (const baseEfficiency of baseEfficiencies()) {
-    for (let efficiency = 12; efficiency <= baseEfficiency; efficiency++) {
+    for (let efficiency = EFFICIENCY_RANGE.min; efficiency <= baseEfficiency; efficiency++) {
       for (let power = 1; power <= 30; power++) {
         const candidate = nftProfitCalculator(efficiency, power, 10, REWARD, BTC_PRICE, baseEfficiency)
         if (candidate.powerCost + candidate.efficiencyCost <= 300) {
