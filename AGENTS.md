@@ -5,4 +5,7 @@
 - Do not run Node or package-manager commands for this project on the macOS host. The repository is bind-mounted into a Linux ARM64 container, including `node_modules`, `.nuxt`, and `.output`; host commands can replace Linux dependencies or generated files with incompatible macOS versions.
 - Use the container's Yarn 1 and preserve `yarn.lock`. Use `yarn install --frozen-lockfile` for dependency installation.
 - Preserve `.env`. Discover the published app port with `docker compose port dashboard 3000`; do not assume the host port is 3000.
-- Stop an active Nuxt dev process before a production build: they share `.nuxt`, and concurrent writes can corrupt generated manifests.
+- The container runs the dev server as its main process, so `docker compose up -d` starts it and `docker compose logs -f dashboard` reads it. Do not launch a second `yarn dev` alongside it.
+- The container runs Node 24, matching the `engines.node` pin Vercel builds against. Keep the two in step when either moves.
+- Stop an active Nuxt dev process before a production build: they share `.nuxt`, and concurrent writes can corrupt generated manifests. The dev server is the container's main process, so build in a one-off container:
+  `docker compose stop dashboard && docker compose run --rm -T -e NITRO_PRESET=vercel dashboard sh -c 'yarn build' && docker compose up -d`

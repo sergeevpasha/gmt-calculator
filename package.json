@@ -12,7 +12,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "node --test tests/",
+    "test": "node --test \"tests/**/*.test.mjs\"",
     "update-snapshot": "node scripts/update-market-snapshot.mjs"
   },
   "devDependencies": {

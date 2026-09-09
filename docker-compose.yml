@@ -1,18 +1,24 @@
-version: "3.8"
 services:
   dashboard:
     container_name: gmt-calculator
-    build: ./docker/images/node
+    build:
+      context: ./docker/images/node
+      args:
+        UID: '${UID:-1000}'
+        GID: '${GID:-1000}'
     hostname: gmt-calculator
+    ports:
+      - '${DOCKER_NODEJS_PORT:-3000}:3000'
+      - '${DOCKER_NODEJS_HMR_PORT:-24678}:24678'
     volumes:
       - ./:/var/www
     working_dir: /var/www
-    user: "node"
+    user: 'node'
     environment:
       HOST: 0.0.0.0
     networks:
       - default-network
 networks:
   default-network:
-    name: "gmt-network"
+    name: 'gmt-network'
     driver: bridge

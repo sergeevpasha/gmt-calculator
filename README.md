@@ -1,78 +1,36 @@
-# Nuxt 3 Minimal Starter
+# GMT Calculator
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+The GoMining mining calculator behind [gmt.guru](https://gmt.guru), a Nuxt 3 app deployed on Vercel.
 
-## Setup
+## Running it
 
-Make sure to install the dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Everything runs in the `gmt-calculator` container: Node, Yarn, the dev server, builds and tests. Do not run Node or Yarn on the macOS host. The repository is bind-mounted into a Linux container including `node_modules`, so a host install replaces the Linux dependencies with incompatible macOS builds.
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+make up
 ```
 
-## Production
+That builds the image if needed, installs dependencies on first boot and starts the Nuxt dev server. The published port comes from `DOCKER_NODEJS_PORT` in `.env`; read it back with `docker compose port dashboard 3000`. Follow the server with `make logs`, open a shell with `make bash`, and stop everything with `make down`.
 
-Build the application for production:
+Run any other project command inside the container:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+docker compose exec -T dashboard yarn lint
+docker compose exec -T dashboard yarn test
+docker compose exec -T dashboard yarn update-snapshot
 ```
 
-Locally preview production build:
+A production build cannot run alongside the dev server, because they share `.nuxt`. The dev server is the container's main process, so build in a one-off container:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+docker compose stop dashboard
+docker compose run --rm -e NITRO_PRESET=vercel dashboard sh -c 'yarn build'
+docker compose up -d
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+That runs the same Vercel preset the deploy uses, so it catches build failures before pushing.
+
+The container runs Node 24, matching the `engines.node` pin that Vercel builds against. Use `yarn install --frozen-lockfile` and keep `yarn.lock`.
 
 ## Branding
 
@@ -86,7 +44,9 @@ Miner prices, energy efficiency upgrade prices, the daily pool payout per TH, th
 - `GET https://api.gomining.com/api/nft-collection/find-all-generative` — the miners GoMining sells in the app, with prices
 - `POST https://api.gomining.com/api/nft/get-upgrade-rate` — energy efficiency upgrade prices per W/TH step
 
-GoMining sells new miners at a single efficiency (12 W/TH today). The calculators accept any whole-number efficiency from 12 to 20 W/TH and price the other levels from the same primary-market data: the 12 W/TH price minus GoMining's official cost of upgrading that miner back to 12 W/TH. Secondary-market listings are never used.
+The calculators accept any whole-number efficiency from 12 to 20 W/TH, priced from primary-market data only. GoMining publishes a full price ladder for some efficiencies (12 and 15 W/TH today); every size it lists on those ladders costs exactly what GoMining charges. A level between two published ladders is interpolated between their real prices at the same power, and a level worse than every published ladder steps down from the least efficient one using the per-W/TH valuation rates from `get-upgrade-rate`. Secondary-market listings are never used.
+
+Those two rate tables are easy to confuse. `powerUpgradePriceConfig` sets what a TH is worth at each efficiency and drives pricing; `energyEfficiencyUpgradePriceConfig` is what an owner pays to improve a miner, and drives the "Worth upgrading?" table. Both are shown in the "Where these numbers come from" panel on the page.
 
 The browser cannot call that API directly (no CORS headers), so the page requests `/api/market`, a Nitro route in `server/api/market.get.ts` that proxies, normalizes and caches the data for 10 minutes. When GoMining is unreachable the route serves `data/gomining-snapshot.json`; refresh that snapshot inside the container with `yarn update-snapshot`. The Bitcoin price comes from CoinGecko, with GoMining's payout rate as the fallback.
 
