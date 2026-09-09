@@ -14,6 +14,13 @@ services:
       - ./:/var/www
     working_dir: /var/www
     user: 'node'
+    # Nitro names its dev worker socket after the process PID and never unlinks
+    # it. Container PIDs are deterministic, so a restart reuses the same name,
+    # and /tmp in the image layer survives `stop` and hands it back a stale
+    # socket: the dev server then dies with EADDRINUSE. Give /tmp the lifetime
+    # it is supposed to have.
+    tmpfs:
+      - /tmp
     environment:
       HOST: 0.0.0.0
     networks:
