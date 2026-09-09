@@ -9,26 +9,16 @@ const stamp = (value: string) => new Date(value).toLocaleString('en-US', { day: 
 
 const electricityPerWatt = computed(() => props.market.kwhPriceUsd * 24 / 1000)
 const ladder = computed(() => [...props.market.miners].sort((a, b) => a.power - b.power))
-// Bulk sizes cost less per TH, so quote the range rather than a single headline price.
-const perTerahash = computed(() => {
-  const prices = ladder.value.map(miner => miner.priceUsd / miner.power)
-  return { high: Math.max(...prices), low: Math.min(...prices) }
-})
-
-// Collapse consecutive levels that share a price, the way GoMining bands its upgrade rates.
-const upgradeBands = computed(() => {
-  const levels = Object.keys(props.market.efficiencyUpgradePrices).map(Number).sort((a, b) => a - b)
-  const bands: { from: number, to: number, priceUsd: number }[] = []
-  for (const level of levels) {
-    const price = props.market.efficiencyUpgradePrices[level]
-    const last = bands[bands.length - 1]
-    if (last && last.priceUsd === price && last.to === level - 1) {
-      last.to = level
-    } else {
-      bands.push({ from: level, to: level, priceUsd: price })
-    }
+// What one TH is worth at each supported efficiency, straight from GoMining's valuation steps.
+const energyBonuses = computed(() => {
+  const steps = props.market.powerUpgradeSteps
+  const reference = steps.filter(step => step.toLevel >= props.market.referenceEfficiency).reduce((total, step) => total + step.priceUsd, 0)
+  const rows = []
+  for (let efficiency = props.market.referenceEfficiency; efficiency <= 20; efficiency++) {
+    const at = steps.filter(step => step.toLevel >= efficiency).reduce((total, step) => total + step.priceUsd, 0)
+    rows.push({ efficiency, bonus: at - reference })
   }
-  return bands
+  return rows
 })
 
 const endpoints = [
@@ -75,14 +65,14 @@ const endpoints = [
         <p>Flat equipment service fee, charged on top of electricity.</p>
       </article>
       <article>
-        <span>Miner price</span>
-        <strong>{{ money(perTerahash.low) }} – {{ money(perTerahash.high) }} <small>/ TH</small></strong>
-        <p>GoMining sells {{ market.referenceEfficiency }} W / TH miners from {{ ladder[0].power }} to {{ number(ladder[ladder.length - 1].power) }} TH; larger ones cost less per TH. Sizes in between are interpolated.</p>
+        <span>Base miner price</span>
+        <strong>{{ money(market.basePriceUsd) }} <small>/ 1 TH</small></strong>
+        <p>GoMining's listed price for 1 TH at {{ market.referenceEfficiency }} W / TH. Each further power band costs {{ (market.bandDecay * 100).toFixed(3) }}% of the one before it.</p>
       </article>
       <article>
-        <span>Efficiency upgrades</span>
-        <strong>{{ money(upgradeBands[0].priceUsd, 3) }} <small>/ TH / step</small></strong>
-        <p>Cost of improving one W / TH. Other efficiencies are priced from the {{ market.referenceEfficiency }} W / TH miner minus these steps.</p>
+        <span>Efficiency value</span>
+        <strong>{{ money(energyBonuses[energyBonuses.length - 1].bonus, 3) }} <small>/ TH at 20 W / TH</small></strong>
+        <p>How much less a TH is worth at 20 W / TH than at {{ market.referenceEfficiency }}. GoMining derives this from its power upgrade rates.</p>
       </article>
     </div>
 
@@ -92,7 +82,7 @@ const endpoints = [
       </summary>
       <div class="detail-columns">
         <div>
-          <h3>{{ market.referenceEfficiency }} W / TH price ladder</h3>
+          <h3>{{ market.referenceEfficiency }} W / TH listed ladder</h3>
           <div class="table-scroll">
             <table>
               <thead>
@@ -119,22 +109,22 @@ const endpoints = [
           </div>
         </div>
         <div>
-          <h3>Efficiency upgrade rates</h3>
+          <h3>What a TH is worth by efficiency</h3>
           <table>
             <thead>
               <tr>
                 <th scope="col">
-                  To level
+                  W / TH
                 </th>
                 <th scope="col">
-                  Price per TH
+                  Value vs {{ market.referenceEfficiency }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="band in upgradeBands" :key="band.from">
-                <td>{{ band.from === band.to ? `${band.from}` : `${band.from} – ${band.to}` }} W / TH</td>
-                <td>{{ money(band.priceUsd, 3) }}</td>
+              <tr v-for="row in energyBonuses" :key="row.efficiency">
+                <td>{{ row.efficiency }} W / TH</td>
+                <td>{{ row.bonus === 0 ? "base" : money(row.bonus, 3) }}</td>
               </tr>
             </tbody>
           </table>
@@ -154,7 +144,7 @@ const endpoints = [
             <li><span>Service fee per day</span><code>{{ money(market.serviceUsdPerThDay, 4) }} × TH × (1 − discount)</code></li>
             <li><span>Mining reward per day</span><code>{{ number(market.rewardSatPerThDay) }} sat × TH ÷ 100,000,000 × BTC price</code></li>
             <li><span>Net profit per day</span><code>reward − electricity − service</code></li>
-            <li><span>Miner value</span><code>{{ market.referenceEfficiency }} W/TH price − upgrade cost back to {{ market.referenceEfficiency }} W/TH</code></li>
+            <li><span>Miner price</span><code>{{ money(market.basePriceUsd) }} + energy value + Σ (TH in band × {{ money(market.basePriceUsd) }} × {{ market.bandDecay.toFixed(6) }}^(band−1) + TH × energy value)</code></li>
             <li><span>Annual ROI</span><code>net profit × 365 ÷ investment</code></li>
             <li><span>Payback</span><code>investment ÷ net profit</code></li>
           </ul>

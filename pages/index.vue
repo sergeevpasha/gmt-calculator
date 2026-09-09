@@ -115,8 +115,8 @@ onBeforeUnmount(() => priceRequest?.abort())
         </h1>
         <p>Find the potential in your next investment.</p>
       </div>
-      <div class="intro-mark" aria-hidden="true">
-        <AppIcon name="chart" />
+      <div class="intro-mark">
+        <GoMiningMark role="img" aria-label="GoMining" />
       </div>
     </section>
 

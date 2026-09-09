@@ -11,7 +11,7 @@ async function request (path, method = 'GET') {
     method,
     headers: { accept: 'application/json', ...(method === 'POST' ? { 'content-type': 'application/json' } : {}) },
     body: method === 'POST' ? '{}' : undefined,
-    signal: AbortSignal.timeout(15000)
+    signal: AbortSignal.timeout(20000)
   })
   if (!response.ok) {
     throw new Error(`${method} ${path} responded with ${response.status}`)
@@ -40,10 +40,13 @@ const snapshot = {
   presets: presets.array
     .map(preset => ({ id: preset.id, power: preset.power, energyEfficiency: preset.energyEfficiency, priceUsdt: preset.priceUsdt, level: preset.level }))
     .sort((a, b) => a.energyEfficiency - b.energyEfficiency || a.power - b.power),
-  upgrades: { energyEfficiencyUpgradePriceConfig: upgrades.energyEfficiencyUpgradePriceConfig }
+  upgrades: {
+    powerUpgradePriceConfig: upgrades.powerUpgradePriceConfig,
+    energyEfficiencyUpgradePriceConfig: upgrades.energyEfficiencyUpgradePriceConfig
+  }
 }
 
 const file = resolve(fileURLToPath(new URL('..', import.meta.url)), 'data/gomining-snapshot.json')
 writeFileSync(file, `${JSON.stringify(snapshot, null, 2)}\n`)
 // eslint-disable-next-line no-console
-console.log(`Saved ${snapshot.presets.length} miner presets, ${snapshot.upgrades.energyEfficiencyUpgradePriceConfig.length} upgrade steps and the ${income.createdAt.slice(0, 10)} payout to ${file}`)
+console.log(`Saved ${snapshot.presets.length} miner presets, ${snapshot.upgrades.powerUpgradePriceConfig.length} valuation steps and the ${income.createdAt.slice(0, 10)} payout to ${file}`)

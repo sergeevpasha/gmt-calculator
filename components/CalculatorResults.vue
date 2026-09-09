@@ -4,14 +4,17 @@ interface MiningResult {
   profit: number
   powerCostC1: number
   serviceCostC2: number
-  referencePrice: number
-  efficiencyDiscount: number
   price: number
+  basePrice: number
+  energyBonus: number
+  powerBonus: number
+  marginalPrice: number
   rateOfInvestment: number
   power: number
   efficiency: number
 }
 const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, referenceEfficiency: number, nft?: boolean }>()
+const formatPrecise = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
 const period = ref(30)
 const periods = [{ label: 'Day', days: 1 }, { label: 'Month', days: 30 }, { label: 'Year', days: 365 }]
 const formatMoney = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value)
@@ -112,7 +115,9 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
           </div><div class="detail-line">
             <span>Energy efficiency</span><strong>{{ result.efficiency }} <small>W / TH</small></strong>
           </div><div class="detail-line muted-detail">
-            <span>{{ referenceEfficiency }} W / TH price / efficiency discount</span><span>{{ formatMoney(result.referencePrice) }} / −{{ formatMoney(result.efficiencyDiscount) }}</span>
+            <span>Miner price</span><strong>{{ formatMoney(result.price) }}</strong>
+          </div><div class="detail-line muted-detail">
+            <span>Next TH costs</span><span>{{ formatPrecise(result.marginalPrice) }}</span>
           </div>
         </div>
         <div class="detail-card">

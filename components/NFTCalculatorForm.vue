@@ -3,11 +3,11 @@ import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
 const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
-const { nftProfitCalculator, minEfficiency, maxEfficiency, maxPower, referenceEfficiency } = useInvest(() => props.market)
+const { nftProfitCalculator, minEfficiency, maxEfficiency, maxPower } = useInvest(() => props.market)
 const lowestEfficiency = computed(() => minEfficiency())
 const highestEfficiency = computed(() => maxEfficiency())
 const powerLimit = computed(() => maxPower())
-const soldEfficiency = computed(() => referenceEfficiency())
+const soldEfficiency = computed(() => props.market.referenceEfficiency)
 const selectedNftEfficiency = ref<number | string>(15)
 const selectedNftPower = ref<number | string>(1)
 const nftUserDiscount = ref<number | string>(10)
@@ -92,7 +92,7 @@ watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate
         <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
       </p>
       <div class="calculation-tip">
-        <AppIcon name="bolt" /><p><strong>Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. GoMining sells {{ soldEfficiency }} W / TH miners; other levels are valued from its official upgrade rates.</p>
+        <AppIcon name="bolt" /><p><strong>Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. GoMining sells {{ soldEfficiency }} W / TH miners. Every level is priced with GoMining's own valuation formula, so a worse W / TH costs less up front but more to run.</p>
       </div>
     </form>
     <CalculatorResults
