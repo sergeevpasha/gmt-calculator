@@ -4,21 +4,20 @@ interface MiningResult {
   profit: number
   powerCostC1: number
   serviceCostC2: number
-  efficiencyCost: number
-  powerCost: number
+  referencePrice: number
+  efficiencyDiscount: number
+  price: number
   rateOfInvestment: number
   power: number
   efficiency: number
-  baseEfficiency?: number
 }
-const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, nft?: boolean }>()
+const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, referenceEfficiency: number, nft?: boolean }>()
 const period = ref(30)
 const periods = [{ label: 'Day', days: 1 }, { label: 'Month', days: 30 }, { label: 'Year', days: 365 }]
 const formatMoney = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value)
 const profit = computed(() => props.result?.profit ?? 0)
 const annualProfit = computed(() => profit.value * 365)
 const dailyReward = computed(() => Number(((props.result?.reward ?? 0) / 100000000 * props.btcPrice).toFixed(2)))
-const upgradedFrom = computed(() => props.result?.baseEfficiency && props.result.baseEfficiency !== props.result.efficiency ? props.result.baseEfficiency : null)
 const payback = computed(() => profit.value > 0 && props.investment > 0 ? Math.ceil(props.investment / profit.value) : null)
 const graphMaximum = computed(() => Math.max(10, Math.ceil(Math.abs(annualProfit.value) / 4 / 10) * 10 * 4))
 const graphEnd = computed(() => 151 - Math.abs(annualProfit.value) / graphMaximum.value * 123)
@@ -69,7 +68,7 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
         <div class="key-metrics">
           <div><span>Annual ROI <AppIcon name="chart" /></span><strong :class="{ 'positive-text': result.rateOfInvestment > 0 }">{{ result.rateOfInvestment.toLocaleString('en-US', { maximumFractionDigits: 2 }) }}<small>%</small></strong></div>
           <div><span>Est. payback <AppIcon name="clock" /></span><strong>{{ payback ? payback.toLocaleString('en-US') : '—' }}<small v-if="payback">days</small></strong></div>
-          <div><span>{{ nft ? 'Est. setup cost' : 'Investment' }} <AppIcon name="chip" /></span><strong>{{ formatMoney(investment) }}</strong></div>
+          <div><span>{{ nft ? 'Est. miner value' : 'Investment' }} <AppIcon name="chip" /></span><strong>{{ formatMoney(investment) }}</strong></div>
         </div>
       </div>
       <div class="projection-card">
@@ -111,9 +110,9 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
           </div><div class="detail-line">
             <span>Mining power</span><strong>{{ result.power.toLocaleString('en-US') }} <small>TH</small></strong>
           </div><div class="detail-line">
-            <span>Energy efficiency</span><strong>{{ result.efficiency }} <small>W / TH</small><small v-if="upgradedFrom"> · upgraded from {{ upgradedFrom }}</small></strong>
+            <span>Energy efficiency</span><strong>{{ result.efficiency }} <small>W / TH</small></strong>
           </div><div class="detail-line muted-detail">
-            <span>Miner price / efficiency upgrade</span><span>{{ formatMoney(result.powerCost) }} / {{ formatMoney(result.efficiencyCost) }}</span>
+            <span>{{ referenceEfficiency }} W / TH price / efficiency discount</span><span>{{ formatMoney(result.referencePrice) }} / −{{ formatMoney(result.efficiencyDiscount) }}</span>
           </div>
         </div>
         <div class="detail-card">

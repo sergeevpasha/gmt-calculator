@@ -11,15 +11,16 @@ export default defineNuxtConfig({
           hid: 'description',
           name: 'description',
           content: 'Easy to use calculator to estimate the profitability of mining Bitcoin with gmt.io'
-        }
+        },
+        { name: 'theme-color', content: '#0c0e15' }
       ],
       link: [
-        { rel: 'icon', type: 'image/icon', href: '/favicon.ico' },
-        { rel: 'icon', type: 'image/svg+xm', href: '/favicon.svg' },
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
-        { rel: 'apple-touch-icon', type: 'image/x-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
-        { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#5bbad5' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#a68aff' },
         { rel: 'manifest', href: '/site.webmanifest' }
       ]
     }

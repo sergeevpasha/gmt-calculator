@@ -1,5 +1,5 @@
-import { isPrimaryLadder, marketSnapshot, normalizeMarket } from '~/data/gomining'
-import type { CatalogueCollection, IncomeAggregation, MarketData, UpgradeRates } from '~/data/gomining'
+import { marketSnapshot, normalizeMarket } from '~/data/gomining'
+import type { GenerativePreset, IncomeAggregation, MarketData, UpgradeRates } from '~/data/gomining'
 
 const API_URL = 'https://api.gomining.com/api'
 const CACHE_TTL = 10 * 60 * 1000
@@ -10,16 +10,16 @@ let inflight: Promise<MarketData> | undefined
 
 async function fetchMarket (): Promise<MarketData> {
   const signal = AbortSignal.timeout(UPSTREAM_TIMEOUT)
-  const [income, catalogue, upgrades] = await Promise.all([
+  const [income, presets, upgrades] = await Promise.all([
     $fetch<{ data: IncomeAggregation }>(`${API_URL}/nft-income-aggregation/get-last`, { method: 'POST', body: {}, signal }),
-    $fetch<{ data: { array: CatalogueCollection[] } }>(`${API_URL}/nft-collection/index`, { method: 'POST', body: { filters: { type: 'generative', saleNftStatus: 'sale' } }, signal }),
+    $fetch<{ data: { array: GenerativePreset[] } }>(`${API_URL}/nft-collection/find-all-generative`, { signal }),
     $fetch<{ data: UpgradeRates }>(`${API_URL}/nft/get-upgrade-rate`, { method: 'POST', body: {}, signal })
   ])
 
   return normalizeMarket({
     fetchedAt: new Date().toISOString(),
     income: income.data,
-    collections: catalogue.data.array.filter(isPrimaryLadder),
+    presets: presets.data.array,
     upgrades: upgrades.data
   }, 'live')
 }

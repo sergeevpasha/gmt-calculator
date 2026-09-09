@@ -33,10 +33,10 @@ h1, h2, h3, p { margin: 0; }
 .app-header { border-bottom: 1px solid var(--border); }
 .header-inner, .footer-inner, .main-content { width: min(1240px, calc(100% - 96px)); margin: 0 auto; }
 .header-inner { min-height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.brand { display: flex; align-items: center; gap: 22px; text-decoration: none; color: var(--text); }
-.brand > svg { width: 137px; height: 28px; }
-.brand-divider { height: 23px; width: 1px; background: #3b3c49; }
-.brand-label { color: #b9b8c9; font-size: 14px; }
+.brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); }
+.brand-mark { width: 37px; height: 26px; flex-shrink: 0; }
+.brand-name { font-family: 'Manrope', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
+.brand-name > span { font-weight: 500; color: var(--muted); }
 .header-note { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--muted); }
 .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
 .calculator-page { padding: 43px 0 34px; }
@@ -158,9 +158,9 @@ h1 > span { color: var(--purple); }
 }
 @media (max-width: 480px) {
   .header-inner, .footer-inner, .main-content { width: calc(100% - 32px); }
-  .brand { gap: 14px; }
-  .brand > svg { width: 137px; height: 28px; }
-  .brand-label { font-size: 12px; }
+  .brand { gap: 11px; }
+  .brand-mark { width: 31px; height: 22px; }
+  .brand-name { font-size: 15px; }
   .page-intro { margin-bottom: 25px; }
   .eyebrow { font-size: 12px; letter-spacing: 1.3px; }
   h1 { font-size: 28px; letter-spacing: -1.2px; }

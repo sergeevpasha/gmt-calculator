@@ -3,13 +3,15 @@ import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
 const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
-const { bestOption, baseEfficiencies, minerPrice } = useInvest(() => props.market)
+const { bestOption, minerPrice, minEfficiency, maxEfficiency, referenceEfficiency } = useInvest(() => props.market)
 const moneyToSpend = ref<number | string>(1000)
 const userDiscount = ref<number | string>(10)
-// 0 compares every efficiency GoMining sells and picks the most profitable miner.
-const baseEfficiency = ref(0)
-const efficiencyOptions = computed(() => [{ value: 0, label: 'Best value for the budget' }, ...baseEfficiencies()])
-const cheapestTerahash = computed(() => Math.min(...baseEfficiencies().map(base => minerPrice(1, base))))
+// 0 compares every efficiency level and picks the most profitable miner.
+const efficiency = ref(0)
+const efficiencyLevels = computed(() => Array.from({ length: maxEfficiency() - minEfficiency() + 1 }, (_, index) => minEfficiency() + index))
+const efficiencyOptions = computed(() => [{ value: 0, label: 'Best value for the budget' }, ...efficiencyLevels.value])
+const soldEfficiency = computed(() => referenceEfficiency())
+const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(level => minerPrice(1, level)).filter(Number.isFinite)))
 const result = ref<ReturnType<typeof bestOption> | null>(null)
 const calculatedInvestment = ref(1000)
 const error = ref('')
@@ -31,7 +33,7 @@ function calculate () {
   error.value = ''
   calculatedBtcPrice.value = props.btcPrice
   calculatedInvestment.value = investment
-  result.value = bestOption(investment, props.btcPrice, props.reward, discount, baseEfficiency.value)
+  result.value = bestOption(investment, props.btcPrice, props.reward, discount, efficiency.value)
   if (result.value.power === 0) {
     error.value = `This budget is below the price of 1 TH ($${cheapestTerahash.value.toFixed(2)}). Increase it to calculate returns.`
     result.value = null
@@ -39,9 +41,9 @@ function calculate () {
   isStale.value = false
 }
 
-watch([moneyToSpend, userDiscount, baseEfficiency], () => { isStale.value = true })
+watch([moneyToSpend, userDiscount, efficiency], () => { isStale.value = true })
 watch(() => props.market, () => {
-  if (baseEfficiency.value && !baseEfficiencies().includes(baseEfficiency.value)) { baseEfficiency.value = 0 }
+  if (efficiency.value && !efficiencyLevels.value.includes(efficiency.value)) { efficiency.value = 0 }
   calculate()
 })
 watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
@@ -83,7 +85,7 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
             </button>
           </div>
         </div>
-        <BaseSelect id="investment-efficiency" v-model="baseEfficiency" label="Miner efficiency" :options="efficiencyOptions" unit="W / TH" />
+        <BaseSelect id="investment-efficiency" v-model="efficiency" label="Miner efficiency" :options="efficiencyOptions" unit="W / TH" />
         <BaseInput
           id="investment-discount"
           v-model="userDiscount"
@@ -106,9 +108,16 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
         <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
       </p>
       <div class="calculation-tip">
-        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We compare GoMining's {{ baseEfficiencies().join(', ') }} W / TH miner prices and efficiency upgrades to find the best daily return for your budget.</p>
+        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We compare every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH at GoMining's current {{ soldEfficiency }} W / TH prices and upgrade rates to find the best daily return for your budget.</p>
       </div>
     </form>
-    <CalculatorResults :result="result" :investment="calculatedInvestment" :btc-price="calculatedBtcPrice" :stale="isStale" id-prefix="investment" />
+    <CalculatorResults
+      :result="result"
+      :investment="calculatedInvestment"
+      :btc-price="calculatedBtcPrice"
+      :stale="isStale"
+      :reference-efficiency="soldEfficiency"
+      id-prefix="investment"
+    />
   </div>
 </template>
