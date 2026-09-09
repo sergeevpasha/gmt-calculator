@@ -26,7 +26,7 @@ function loadModule (filename) {
 
 const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, listedPrice, energyBonus, priceBreakdown, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -64,19 +64,41 @@ test('malformed API responses are rejected instead of producing zero prices', ()
   assert.equal(normalizeMarket(snapshot, 'live').source, 'live')
 })
 
-test('every listed size costs exactly what GoMining charges for it', () => {
-  for (const preset of marketSnapshot.miners) {
-    assert.equal(round(listedPrice(preset.power)), round(preset.priceUsd), `${preset.power} TH`)
-    assert.equal(minerPrice(preset.power, marketSnapshot.referenceEfficiency), round(preset.priceUsd))
+test('every listed size on every published ladder costs exactly what GoMining charges', () => {
+  const snapshot = rawSnapshot()
+  for (const efficiency of publishedEfficiencies()) {
+    const listed = snapshot.presets.filter(preset => preset.energyEfficiency === efficiency)
+    assert.ok(listed.length >= 3, `no listed sizes at ${efficiency} W/TH`)
+    for (const preset of listed) {
+      assert.equal(minerPrice(preset.power, efficiency), round(preset.priceUsdt), `${preset.power} TH at ${efficiency} W/TH`)
+    }
   }
 })
 
-test('sizes between listed ones interpolate along GoMinings ladder', () => {
+test('GoMining publishes more than one ladder and both are used', () => {
+  assert.ok(publishedEfficiencies().length >= 2, 'expected at least two published ladders')
+  assert.equal(publishedEfficiencies()[0], marketSnapshot.referenceEfficiency)
+})
+
+test('levels between two published ladders interpolate between their real prices', () => {
+  const [low, high] = publishedEfficiencies()
+  const power = 128
+  const a = priceAt(power, low)
+  const b = priceAt(power, high)
+  for (let efficiency = low + 1; efficiency < high; efficiency++) {
+    const price = priceAt(power, efficiency)
+    assert.ok(price < a && price > b, `${efficiency} W/TH must sit between the two ladders`)
+  }
+  const mid = low + (high - low) / 2
+  if (Number.isInteger(mid)) {
+    assert.ok(Math.abs(priceAt(power, mid) - (a + b) / 2) < 0.01)
+  }
+})
+
+test('sizes between listed ones interpolate along the ladder', () => {
   const two = marketSnapshot.miners.find(miner => miner.power === 2).priceUsd
   const four = marketSnapshot.miners.find(miner => miner.power === 4).priceUsd
-  assert.equal(round(listedPrice(3)), round(two + (four - two) / 2))
-  const largest = marketSnapshot.miners[marketSnapshot.miners.length - 1]
-  assert.equal(round(listedPrice(largest.power * 2)), round(largest.priceUsd * 2))
+  assert.equal(round(priceAt(3, 12)), round(two + (four - two) / 2))
 })
 
 test('energy value per TH comes from GoMinings own step table', () => {
@@ -98,14 +120,17 @@ test('a worse efficiency costs less up front at every size', () => {
   assert.ok(Number.isNaN(minerPrice(1, 12.5)))
 })
 
-test('price breakdown adds up and the marginal follows the ladder slope', () => {
+test('price breakdown adds up and the marginal follows the curve at that efficiency', () => {
   const breakdown = priceBreakdown(128, 20)
   assert.equal(breakdown.price, round(breakdown.listedPrice + breakdown.efficiencyAdjustment))
   assert.equal(breakdown.listedPrice, round(marketSnapshot.miners.find(miner => miner.power === 128).priceUsd))
-  const at128 = marketSnapshot.miners.find(miner => miner.power === 128).priceUsd
-  const at192 = marketSnapshot.miners.find(miner => miner.power === 192).priceUsd
-  assert.equal(marginalPrice(128, 12), round((at192 - at128) / 64))
-  assert.equal(marginalPrice(128, 20), round((at192 - at128) / 64 + energyBonus(20)))
+  for (const efficiency of [12, 15, 20]) {
+    assert.equal(marginalPrice(128, efficiency), round(priceAt(129, efficiency) - priceAt(128, efficiency)))
+    assert.ok(marginalPrice(128, efficiency) > 0)
+  }
+  // A worse efficiency must always make the next TH cheaper.
+  assert.ok(marginalPrice(128, 20) < marginalPrice(128, 15))
+  assert.ok(marginalPrice(128, 15) < marginalPrice(128, 12))
 })
 
 test('daily fees follow the live electricity and service rates', () => {

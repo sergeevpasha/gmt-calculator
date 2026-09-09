@@ -67,7 +67,7 @@ const endpoints = [
       <article>
         <span>Base miner price</span>
         <strong>{{ money(market.basePriceUsd) }} <small>/ 1 TH</small></strong>
-        <p>GoMining's listed price for 1 TH at {{ market.referenceEfficiency }} W / TH. Larger sizes come straight from its published ladder, so each one costs exactly what GoMining charges.</p>
+        <p>GoMining's listed price for 1 TH at {{ market.referenceEfficiency }} W / TH. It publishes full ladders at {{ market.ladders.map(l => l.efficiency).join(' and ') }} W / TH, and every listed size costs exactly what GoMining charges.</p>
       </article>
       <article>
         <span>Efficiency value</span>
@@ -144,7 +144,7 @@ const endpoints = [
             <li><span>Service fee per day</span><code>{{ money(market.serviceUsdPerThDay, 4) }} × TH × (1 − discount)</code></li>
             <li><span>Mining reward per day</span><code>{{ number(market.rewardSatPerThDay) }} sat × TH ÷ 100,000,000 × BTC price</code></li>
             <li><span>Net profit per day</span><code>reward − electricity − service</code></li>
-            <li><span>Miner price</span><code>GoMining's listed price for that power + energy value × TH</code></li>
+            <li><span>Miner price</span><code>{{ market.ladders.map(l => l.efficiency).join('/') }} W/TH from GoMining's listed ladder; levels between them interpolated; worse levels stepped down by the valuation rate</code></li>
             <li><span>Annual ROI</span><code>net profit × 365 ÷ investment</code></li>
             <li><span>Payback</span><code>investment ÷ net profit</code></li>
           </ul>

@@ -59,6 +59,12 @@ export interface MinerPreset {
   priceUsd: number
 }
 
+// A full price ladder GoMining publishes for one efficiency.
+export interface EfficiencyLadder {
+  efficiency: number
+  presets: MinerPreset[]
+}
+
 export interface MarketData {
   source: 'live' | 'snapshot'
   fetchedAt: string
@@ -77,7 +83,10 @@ export interface MarketData {
   powerUpgradeSteps: UpgradeStep[]
   // Per-TH cost of upgrading an owned miner one W/TH, keyed by target level. Reference only.
   efficiencyUpgradePrices: Record<number, number>
-  // GoMining's published price ladder at the reference efficiency, ascending by power.
+  // Every price ladder GoMining publishes, best efficiency first. Prices for the efficiencies it does not
+  // publish are interpolated between these, or stepped down from the least efficient one.
+  ladders: EfficiencyLadder[]
+  // The reference ladder, kept for display.
   miners: MinerPreset[]
 }
 
@@ -98,17 +107,27 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
     throw new Error('GoMining miner presets are empty')
   }
   const referenceEfficiency = Math.min(...presets.map(preset => preset.energyEfficiency))
-  const ladder = new Map<number, number>()
-  for (const preset of presets.filter(preset => preset.energyEfficiency === referenceEfficiency)) {
-    const current = ladder.get(preset.power)
+  // One ladder per efficiency GoMining publishes; keep the cheapest row if a size is listed twice.
+  const byEfficiency = new Map<number, Map<number, number>>()
+  for (const preset of presets) {
+    const sizes = byEfficiency.get(preset.energyEfficiency) ?? new Map<number, number>()
+    const current = sizes.get(preset.power)
     if (current === undefined || preset.priceUsdt < current) {
-      ladder.set(preset.power, preset.priceUsdt)
+      sizes.set(preset.power, preset.priceUsdt)
     }
+    byEfficiency.set(preset.energyEfficiency, sizes)
   }
-  const miners = [...ladder.entries()].map(([power, priceUsd]) => ({ power, priceUsd })).sort((a, b) => a.power - b.power)
-  if (miners.length < 3) {
-    throw new Error('GoMining price ladder is too short')
+  const ladders: EfficiencyLadder[] = [...byEfficiency.entries()]
+    .map(([efficiency, sizes]) => ({
+      efficiency,
+      presets: [...sizes.entries()].map(([power, priceUsd]) => ({ power, priceUsd })).sort((a, b) => a.power - b.power)
+    }))
+    .filter(ladder => ladder.presets.length >= 3)
+    .sort((a, b) => a.efficiency - b.efficiency)
+  if (!ladders.length || ladders[0].efficiency !== referenceEfficiency) {
+    throw new Error('GoMining price ladders are missing or too short')
   }
+  const miners = ladders[0].presets
   const base = miners.find(miner => miner.power === 1)
   if (!base) {
     throw new Error('GoMining does not list a 1 TH miner to anchor prices on')
@@ -140,6 +159,7 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
     basePriceUsd: base.priceUsd,
     powerUpgradeSteps,
     efficiencyUpgradePrices,
+    ladders,
     miners
   }
 }
