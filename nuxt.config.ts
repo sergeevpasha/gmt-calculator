@@ -1,5 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  // `nuxt dev` and `nuxt build` both default to .nuxt, so a build launched while
+  // the dev server is running overwrites the manifests underneath it. Let the
+  // build point somewhere else instead. .cache is already ignored by the dev
+  // watcher and by git, so a build there does not disturb a running server.
+  buildDir: process.env.NUXT_BUILD_DIR || '.nuxt',
   devtools: { enabled: true }.enabled,
   app: {
     head: {

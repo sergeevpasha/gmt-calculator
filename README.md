@@ -20,12 +20,10 @@ docker compose exec -T dashboard yarn test
 docker compose exec -T dashboard yarn update-snapshot
 ```
 
-A production build cannot run alongside the dev server, because they share `.nuxt`. The dev server is the container's main process, so build in a one-off container:
+A production build can run while the dev server is up. Both default to the `.nuxt` build directory and would overwrite each other, so give the build its own with `NUXT_BUILD_DIR`:
 
 ```bash
-docker compose stop dashboard
-docker compose run --rm -e NITRO_PRESET=vercel dashboard sh -c 'yarn build'
-docker compose up -d
+docker compose exec -T -e NUXT_BUILD_DIR=.cache/nuxt-build -e NITRO_PRESET=vercel dashboard yarn build
 ```
 
 That runs the same Vercel preset the deploy uses, so it catches build failures before pushing.
