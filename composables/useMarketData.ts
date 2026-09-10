@@ -5,7 +5,9 @@ export type MarketStatus = 'loading' | 'live' | 'snapshot'
 
 // GoMining prices, fees and the daily payout, shared by the page and both calculators.
 export const useMarketData = () => {
-  const market = useState<MarketData>('market', () => marketSnapshot)
+  // Shallow, because one estimate reads thousands of prices and a deep reactive copy sends each read through a
+  // proxy. The object is only ever replaced whole, so nothing inside it needs tracking.
+  const market = useState<MarketData>('market', () => shallowRef(marketSnapshot))
   const status = useState<MarketStatus>('market-status', () => 'loading')
   const pending = useState('market-pending', () => false)
 
