@@ -17,9 +17,10 @@ const result = ref<MiningEstimate | null>(null)
 const upgrades = ref<UpgradeOption[]>([])
 const investment = computed(() => result.value ? result.value.price : 0)
 const error = ref('')
-const isStale = ref(false)
 const calculatedBtcPrice = ref(props.btcPrice)
 
+// Inputs that cannot be estimated, such as a field halfway through being retyped, keep the last estimate on screen
+// and say what to fix.
 function calculate () {
   const efficiency = selectedNftEfficiency.value
   const power = selectedNftPower.value
@@ -30,22 +31,20 @@ function calculate () {
   }
   if (props.btcPrice <= 0 || props.btcPrice > 10000000 || props.reward === null || props.reward < 0 || props.reward > 1000000) {
     error.value = 'Check your Bitcoin price and daily mining reward above.'
-    result.value = null
     return
   }
   error.value = ''
   calculatedBtcPrice.value = props.btcPrice
   result.value = nftProfitCalculator(efficiency, power, discount, props.reward, props.btcPrice)
   upgrades.value = upgradeOptions(efficiency, power, discount)
-  isStale.value = false
 }
 
-watch([selectedNftEfficiency, selectedNftPower, nftUserDiscount], () => { isStale.value = true })
-watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate: true })
+// Recalculates whenever anything it reads changes: the fields above, the market assumptions or GoMining's data.
+watchEffect(calculate)
 </script>
 <template>
   <div class="grid grid-cols-[355px_minmax(0,1fr)] gap-6 [align-items:start] to-1100:grid-cols-[310px_minmax(0,1fr)] to-1100:gap-[18px] to-800:grid-cols-[1fr]">
-    <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5" @submit.prevent="calculate">
+    <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5">
       <div class="mb-[7px] flex items-center gap-2.5">
         <AppIcon name="chip" class="h-[19px] w-[19px] text-purple" /><h2 class="text-[17px] font-[550] tracking-[-.3px]">
           Meet your miner's potential
@@ -87,10 +86,6 @@ watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate
       <p v-if="error" class="mb-[15px] text-[14px] leading-[1.5] text-[#ffb0b6]" role="alert">
         {{ error }}
       </p>
-      <BaseButton type="submit" label="Calculate returns" />
-      <p class="mt-3.5 flex items-center justify-center gap-1.5 text-[12px] text-dim" aria-live="polite">
-        <AppIcon class="h-[13px] w-[13px]" :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
-      </p>
       <div class="mt-[23px] flex gap-[11px] border-t border-border pt-[19px] to-800:mt-[18px] to-800:pt-4">
         <AppIcon name="bolt" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-purple" /><p class="text-[12px] leading-[1.7] text-muted">
           <strong class="mb-[3px] block font-medium text-[#d0cddd]">Lower watts. Greater efficiency.</strong>A lower W / TH rating means your miner uses less electricity for the same mining power. GoMining sells {{ soldEfficiency }} W / TH miners. Every level is priced with GoMining's own valuation formula, so a worse W / TH costs less up front but more to run.
@@ -101,7 +96,7 @@ watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate
       :result="result"
       :investment="investment"
       :btc-price="calculatedBtcPrice"
-      :stale="isStale"
+      :stale="error !== ''"
       :upgrades="upgrades"
       id-prefix="nft"
       nft

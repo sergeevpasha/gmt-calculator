@@ -16,9 +16,10 @@ const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(l
 const result = ref<MiningEstimate | null>(null)
 const calculatedInvestment = ref(1000)
 const error = ref('')
-const isStale = ref(false)
 const calculatedBtcPrice = ref(props.btcPrice)
 
+// Inputs that cannot be estimated, such as a field halfway through being retyped, keep the last estimate on screen
+// and say what to fix.
 function calculate () {
   const investment = moneyToSpend.value
   const discount = userDiscount.value
@@ -28,27 +29,25 @@ function calculate () {
   }
   if (props.btcPrice <= 0 || props.btcPrice > 10000000 || props.reward === null || props.reward < 0 || props.reward > 1000000) {
     error.value = 'Check your Bitcoin price and daily mining reward above.'
-    result.value = null
+    return
+  }
+  const estimate = bestOption(investment, props.btcPrice, props.reward, discount, efficiency.value)
+  if (estimate.power === 0) {
+    error.value = `This budget is below the price of 1 TH ($${cheapestTerahash.value.toFixed(2)}). Increase it to see returns.`
     return
   }
   error.value = ''
   calculatedBtcPrice.value = props.btcPrice
   calculatedInvestment.value = investment
-  result.value = bestOption(investment, props.btcPrice, props.reward, discount, efficiency.value)
-  if (result.value.power === 0) {
-    error.value = `This budget is below the price of 1 TH ($${cheapestTerahash.value.toFixed(2)}). Increase it to calculate returns.`
-    result.value = null
-  }
-  isStale.value = false
+  result.value = estimate
 }
 
-watch([moneyToSpend, userDiscount, efficiency], () => { isStale.value = true })
-watch(() => props.market, calculate)
-watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
+// Recalculates whenever anything it reads changes: the fields above, the market assumptions or GoMining's data.
+watchEffect(calculate)
 </script>
 <template>
   <div class="grid grid-cols-[355px_minmax(0,1fr)] gap-6 [align-items:start] to-1100:grid-cols-[310px_minmax(0,1fr)] to-1100:gap-[18px] to-800:grid-cols-[1fr]">
-    <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5" @submit.prevent="calculate">
+    <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5">
       <div class="mb-[7px] flex items-center gap-2.5">
         <AppIcon name="settings" class="h-[19px] w-[19px] text-purple" /><h2 class="text-[17px] font-[550] tracking-[-.3px]">
           Set up your investment
@@ -104,10 +103,6 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
       <p v-if="error" class="mb-[15px] text-[14px] leading-[1.5] text-[#ffb0b6]" role="alert">
         {{ error }}
       </p>
-      <BaseButton type="submit" label="Calculate returns" />
-      <p class="mt-3.5 flex items-center justify-center gap-1.5 text-[12px] text-dim" aria-live="polite">
-        <AppIcon class="h-[13px] w-[13px]" :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
-      </p>
       <div class="mt-[23px] flex gap-[11px] border-t border-border pt-[19px] to-800:mt-[18px] to-800:pt-4">
         <AppIcon name="bolt" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-purple" /><p class="text-[12px] leading-[1.7] text-muted">
           <strong class="mb-[3px] block font-medium text-[#d0cddd]">Make every terahash count.</strong>We price every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH with GoMining's own valuation formula, then pick the best daily return for your budget.
@@ -118,7 +113,7 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
       :result="result"
       :investment="calculatedInvestment"
       :btc-price="calculatedBtcPrice"
-      :stale="isStale"
+      :stale="error !== ''"
       id-prefix="investment"
     />
   </div>

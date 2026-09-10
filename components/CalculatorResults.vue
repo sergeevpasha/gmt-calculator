@@ -210,7 +210,7 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
       <span class="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[#202030] text-[#ada1cc]"><AppIcon name="chart" class="h-5 w-5" /></span><h3 class="mb-2 mt-5 text-[18px]">
         A clearer outlook starts here.
       </h3><p class="max-w-[320px] text-[14px] leading-[1.7] text-muted">
-        Check your inputs, then calculate to see your estimated returns.
+        Check your inputs to see your estimated returns.
       </p>
     </div>
   </section>
