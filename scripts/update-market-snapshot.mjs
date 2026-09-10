@@ -38,7 +38,7 @@ const snapshot = {
     c4ValuePerThToday: income.c4ValuePerThToday ?? 0
   },
   presets: presets.array
-    .map(preset => ({ id: preset.id, power: preset.power, energyEfficiency: preset.energyEfficiency, priceUsdt: preset.priceUsdt, level: preset.level }))
+    .map(preset => ({ power: preset.power, energyEfficiency: preset.energyEfficiency, priceUsdt: preset.priceUsdt }))
     .sort((a, b) => a.energyEfficiency - b.energyEfficiency || a.power - b.power),
   upgrades: {
     powerUpgradePriceConfig: upgrades.powerUpgradePriceConfig,

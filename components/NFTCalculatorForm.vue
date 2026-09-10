@@ -1,45 +1,41 @@
 <script setup lang="ts">
 import { useInvest } from '~/composables/useInvest'
+import type { MiningEstimate, UpgradeOption } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
-const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
+// `reward` is null while its field is empty, which is not the same as a reward of zero.
+const props = defineProps<{ btcPrice: number, reward: number | null, market: MarketData }>()
 const { nftProfitCalculator, upgradeOptions, minEfficiency, maxEfficiency, maxPower } = useInvest(() => props.market)
 const lowestEfficiency = computed(() => minEfficiency())
 const highestEfficiency = computed(() => maxEfficiency())
 const powerLimit = computed(() => maxPower())
 const soldEfficiency = computed(() => props.market.referenceEfficiency)
-const selectedNftEfficiency = ref<number | string>(15)
-const selectedNftPower = ref<number | string>(1)
-const nftUserDiscount = ref<number | string>(10)
-const result = ref<ReturnType<typeof nftProfitCalculator> | null>(null)
-const upgrades = ref<ReturnType<typeof upgradeOptions>>([])
+const selectedNftEfficiency = ref<number | ''>(15)
+const selectedNftPower = ref<number | ''>(1)
+const nftUserDiscount = ref<number | ''>(10)
+const result = ref<MiningEstimate | null>(null)
+const upgrades = ref<UpgradeOption[]>([])
 const investment = computed(() => result.value ? result.value.price : 0)
 const error = ref('')
 const isStale = ref(false)
 const calculatedBtcPrice = ref(props.btcPrice)
 
 function calculate () {
-  const efficiency = Number(selectedNftEfficiency.value)
-  const power = Number(selectedNftPower.value)
-  const discount = Number(nftUserDiscount.value)
-  if (![efficiency, power, discount].every(Number.isFinite) || !Number.isInteger(efficiency) || efficiency < lowestEfficiency.value || efficiency > highestEfficiency.value || !Number.isInteger(power) || power < 1 || power > powerLimit.value || nftUserDiscount.value === '' || discount < 0 || discount > 100) {
+  const efficiency = selectedNftEfficiency.value
+  const power = selectedNftPower.value
+  const discount = nftUserDiscount.value
+  if (efficiency === '' || !Number.isInteger(efficiency) || efficiency < lowestEfficiency.value || efficiency > highestEfficiency.value || power === '' || !Number.isInteger(power) || power < 1 || power > powerLimit.value || discount === '' || discount < 0 || discount > 100) {
     error.value = `Use a whole-number efficiency from ${lowestEfficiency.value} to ${highestEfficiency.value} W / TH, power from 1 to ${powerLimit.value.toLocaleString('en-US')} TH, and a discount from 0 to 100%.`
     return
   }
-  if (!Number.isFinite(props.btcPrice) || props.btcPrice <= 0 || props.btcPrice > 10000000 || !Number.isFinite(props.reward) || props.reward < 0 || props.reward > 1000000) {
+  if (props.btcPrice <= 0 || props.btcPrice > 10000000 || props.reward === null || props.reward < 0 || props.reward > 1000000) {
     error.value = 'Check your Bitcoin price and daily mining reward above.'
-    result.value = null
-    return
-  }
-  const estimate = nftProfitCalculator(efficiency, power, discount, props.reward, props.btcPrice)
-  if (!Number.isFinite(estimate.price)) {
-    error.value = 'GoMining pricing is unavailable for this efficiency right now.'
     result.value = null
     return
   }
   error.value = ''
   calculatedBtcPrice.value = props.btcPrice
-  result.value = estimate
+  result.value = nftProfitCalculator(efficiency, power, discount, props.reward, props.btcPrice)
   upgrades.value = upgradeOptions(efficiency, power, discount)
   isStale.value = false
 }
@@ -106,7 +102,6 @@ watch(() => [props.btcPrice, props.reward, props.market], calculate, { immediate
       :investment="investment"
       :btc-price="calculatedBtcPrice"
       :stale="isStale"
-      :reference-efficiency="soldEfficiency"
       :upgrades="upgrades"
       id-prefix="nft"
       nft

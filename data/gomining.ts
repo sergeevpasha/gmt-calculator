@@ -11,6 +11,7 @@
 // `gomining-snapshot.json` stores the last raw responses and is the fallback when the API is unreachable.
 // Refresh it with: docker compose exec -T dashboard yarn update-snapshot
 import raw from './gomining-snapshot.json'
+import { isRecord } from '~/utils/isRecord'
 
 // W/TH range the calculators cover: 12 is the best level GoMining sells, 20 the least efficient it still upgrades.
 export const EFFICIENCY_RANGE = { min: 12, max: 20 }
@@ -20,8 +21,8 @@ export interface IncomeAggregation {
   btcCourseInUsd: number
   // Gross pool payout, USD per TH per day.
   totalIncomePerThToday: number
-  // Gross pool payout over the last 365 days, USD per TH.
-  totalIncomePerTh: number
+  // Gross pool payout over the last 365 days, USD per TH. GoMining sometimes leaves it out.
+  totalIncomePerTh?: number
   // Electricity, USD per TH per W/TH per day (kWh price * 24 / 1000).
   c1ValuePerThPerWtToday: number
   // Service fee, USD per TH per day.
@@ -31,11 +32,9 @@ export interface IncomeAggregation {
 }
 
 export interface GenerativePreset {
-  id?: number
   power: number
   energyEfficiency: number
   priceUsdt: number
-  level?: number
 }
 
 export interface UpgradeStep { toLevel: number, priceUsd: number }
@@ -92,8 +91,8 @@ export interface MarketData {
   basePriceUsd: number
   // Full step table that values a TH at each W/TH level; every level matters, not just 12 to 19.
   powerUpgradeSteps: UpgradeStep[]
-  // Per-TH cost of upgrading an owned miner one W/TH, keyed by target level. Reference only.
-  efficiencyUpgradePrices: Record<number, number>
+  // Per-TH cost of upgrading an owned miner one W/TH, by target level from the best up. Reference only.
+  efficiencyUpgradeSteps: UpgradeStep[]
   // Every price ladder GoMining publishes, best efficiency first. Prices for the efficiencies it does not
   // publish are interpolated between these, or stepped down from the least efficient one.
   ladders: EfficiencyLadder[]
@@ -101,19 +100,58 @@ export interface MarketData {
   miners: MinerPreset[]
 }
 
-const isPositive = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0
-const isAmount = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0
+const isPositive = (value: unknown): value is number => typeof value === 'number' && value > 0
+const isAmount = (value: unknown): value is number => typeof value === 'number' && value >= 0
+const list = (value: unknown): unknown[] => Array.isArray(value) ? value : []
 const round = (value: number, digits: number) => Number(value.toFixed(digits))
-const isStep = (step: unknown): step is UpgradeStep =>
-  !!step && typeof step === 'object' && Number.isInteger((step as UpgradeStep).toLevel) && isAmount((step as UpgradeStep).priceUsd)
 
-export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData['source']): MarketData {
-  const income = snapshot.income
-  if (!income || !isPositive(income.btcCourseInUsd) || !isAmount(income.totalIncomePerThToday) || !isAmount(income.c1ValuePerThPerWtToday) || !isAmount(income.c2ValuePerThToday)) {
+function readIncome (income: unknown): IncomeAggregation {
+  if (!isRecord(income) || typeof income.createdAt !== 'string' || !isPositive(income.btcCourseInUsd) || !isAmount(income.totalIncomePerThToday) || !isAmount(income.c1ValuePerThPerWtToday) || !isAmount(income.c2ValuePerThToday)) {
     throw new Error('GoMining income aggregation is malformed')
   }
+  return {
+    createdAt: income.createdAt,
+    btcCourseInUsd: income.btcCourseInUsd,
+    totalIncomePerThToday: income.totalIncomePerThToday,
+    totalIncomePerTh: isAmount(income.totalIncomePerTh) ? income.totalIncomePerTh : undefined,
+    c1ValuePerThPerWtToday: income.c1ValuePerThPerWtToday,
+    c2ValuePerThToday: income.c2ValuePerThToday,
+    c3ValuePerThToday: isAmount(income.c3ValuePerThToday) ? income.c3ValuePerThToday : undefined,
+    c4ValuePerThToday: isAmount(income.c4ValuePerThToday) ? income.c4ValuePerThToday : undefined
+  }
+}
 
-  const presets = (snapshot.presets ?? []).filter(preset => isPositive(preset.power) && isPositive(preset.priceUsdt) && isPositive(preset.energyEfficiency))
+// A row of one of GoMining's lists as a one-item array, or an empty one when the row is unusable, for flatMap.
+const readPreset = (row: unknown): GenerativePreset[] =>
+  isRecord(row) && isPositive(row.power) && isPositive(row.energyEfficiency) && isPositive(row.priceUsdt)
+    ? [{ power: row.power, energyEfficiency: row.energyEfficiency, priceUsdt: row.priceUsdt }]
+    : []
+
+const readStep = (row: unknown): UpgradeStep[] =>
+  isRecord(row) && typeof row.toLevel === 'number' && Number.isInteger(row.toLevel) && isAmount(row.priceUsd)
+    ? [{ toLevel: row.toLevel, priceUsd: row.priceUsd }]
+    : []
+
+// GoMining's responses are the one input nothing in this codebase controls, so they are checked here, field by
+// field, and trusted everywhere after. Rows the calculators cannot use are dropped; an unusable payout throws.
+export function parseSnapshot (value: unknown): GoMiningSnapshot {
+  if (!isRecord(value) || typeof value.fetchedAt !== 'string') {
+    throw new Error('GoMining snapshot is malformed')
+  }
+  const upgrades: Record<string, unknown> = isRecord(value.upgrades) ? value.upgrades : {}
+  return {
+    fetchedAt: value.fetchedAt,
+    income: readIncome(value.income),
+    presets: list(value.presets).flatMap(readPreset).sort((a, b) => a.energyEfficiency - b.energyEfficiency || a.power - b.power),
+    upgrades: {
+      powerUpgradePriceConfig: list(upgrades.powerUpgradePriceConfig).flatMap(readStep),
+      energyEfficiencyUpgradePriceConfig: list(upgrades.energyEfficiencyUpgradePriceConfig).flatMap(readStep)
+    }
+  }
+}
+
+export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData['source']): MarketData {
+  const { income, presets, upgrades } = snapshot
   if (!presets.length) {
     throw new Error('GoMining miner presets are empty')
   }
@@ -144,17 +182,14 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
     throw new Error('GoMining does not list a 1 TH miner to anchor prices on')
   }
 
-  const powerUpgradeSteps = (snapshot.upgrades?.powerUpgradePriceConfig ?? []).filter(isStep).sort((a, b) => a.toLevel - b.toLevel)
+  const powerUpgradeSteps = [...upgrades.powerUpgradePriceConfig].sort((a, b) => a.toLevel - b.toLevel)
   if (!powerUpgradeSteps.some(step => step.toLevel === referenceEfficiency) || !powerUpgradeSteps.some(step => step.toLevel === EFFICIENCY_RANGE.max - 1)) {
     throw new Error('GoMining valuation steps do not cover the supported efficiency range')
   }
 
-  const efficiencyUpgradePrices: Record<number, number> = {}
-  for (const step of (snapshot.upgrades?.energyEfficiencyUpgradePriceConfig ?? []).filter(isStep)) {
-    if (step.toLevel >= referenceEfficiency && step.toLevel < EFFICIENCY_RANGE.max) {
-      efficiencyUpgradePrices[step.toLevel] = step.priceUsd
-    }
-  }
+  const efficiencyUpgradeSteps = upgrades.energyEfficiencyUpgradePriceConfig
+    .filter(step => step.toLevel >= referenceEfficiency && step.toLevel < EFFICIENCY_RANGE.max)
+    .sort((a, b) => a.toLevel - b.toLevel)
 
   return {
     source,
@@ -163,16 +198,16 @@ export function normalizeMarket (snapshot: GoMiningSnapshot, source: MarketData[
     btcPriceUsd: income.btcCourseInUsd,
     rewardUsdPerThDay: income.totalIncomePerThToday,
     rewardSatPerThDay: round(income.totalIncomePerThToday / income.btcCourseInUsd * 100000000, 2),
-    averageRewardUsdPerThDay: isAmount(income.totalIncomePerTh) ? round(income.totalIncomePerTh / 365, 6) : income.totalIncomePerThToday,
+    averageRewardUsdPerThDay: income.totalIncomePerTh === undefined ? income.totalIncomePerThToday : round(income.totalIncomePerTh / 365, 6),
     kwhPriceUsd: round(income.c1ValuePerThPerWtToday * 1000 / 24, 6),
     serviceUsdPerThDay: round(income.c2ValuePerThToday + (income.c3ValuePerThToday ?? 0) + (income.c4ValuePerThToday ?? 0), 6),
     referenceEfficiency,
     basePriceUsd: base.priceUsd,
     powerUpgradeSteps,
-    efficiencyUpgradePrices,
+    efficiencyUpgradeSteps,
     ladders,
     miners
   }
 }
 
-export const marketSnapshot: MarketData = normalizeMarket(raw as GoMiningSnapshot, 'snapshot')
+export const marketSnapshot: MarketData = normalizeMarket(raw, 'snapshot')

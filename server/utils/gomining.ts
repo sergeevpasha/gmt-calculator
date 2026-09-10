@@ -1,5 +1,6 @@
-import { normalizeMarket } from '~/data/gomining'
-import type { GenerativePreset, GoMiningSnapshot, HistoryPoint, IncomeAggregation, MarketData, UpgradeRates } from '~/data/gomining'
+import { normalizeMarket, parseSnapshot } from '~/data/gomining'
+import type { GoMiningSnapshot, HistoryPoint, MarketData } from '~/data/gomining'
+import { isRecord } from '~/utils/isRecord'
 
 const API_URL = 'https://api.gomining.com/api'
 const UPSTREAM_TIMEOUT = 8000
@@ -13,29 +14,31 @@ const HISTORY_PREFIX = 'history:'
 // however long the series grows. The full daily readings under history:* stay the complete record,
 // and this can be rebuilt from them if the two ever disagree.
 const SERIES_KEY = 'series'
-const store = () => useStorage('market')
+// One mount, two kinds of value: readings under STORAGE_KEY and history:*, the series under SERIES_KEY.
+// Each gets a handle typed for its own keys, and only this file writes either.
+const readingStore = () => useStorage<GoMiningSnapshot>('market')
+const seriesStore = () => useStorage<HistoryPoint[]>('market')
 
-// The three public endpoints the calculators run on, trimmed to the shape gomining-snapshot.json holds
-// so the stored document, the bundled file and scripts/update-market-snapshot.mjs stay interchangeable.
+// GoMining wraps every response in { data }, and the miner catalogue once more in { array }.
+const unwrap = (value: unknown, key: string): unknown => isRecord(value) ? value[key] : undefined
+
+// The three public endpoints the calculators run on, checked and trimmed by parseSnapshot to the shape
+// gomining-snapshot.json holds, so the stored document, the bundled file and
+// scripts/update-market-snapshot.mjs stay interchangeable.
 export async function readGoMining (): Promise<GoMiningSnapshot> {
   const signal = AbortSignal.timeout(UPSTREAM_TIMEOUT)
   const [income, presets, upgrades] = await Promise.all([
-    $fetch<{ data: IncomeAggregation }>(`${API_URL}/nft-income-aggregation/get-last`, { method: 'POST', body: {}, signal }),
-    $fetch<{ data: { array: GenerativePreset[] } }>(`${API_URL}/nft-collection/find-all-generative`, { signal }),
-    $fetch<{ data: UpgradeRates }>(`${API_URL}/nft/get-upgrade-rate`, { method: 'POST', body: {}, signal })
+    $fetch(`${API_URL}/nft-income-aggregation/get-last`, { method: 'POST', body: {}, signal }),
+    $fetch(`${API_URL}/nft-collection/find-all-generative`, { signal }),
+    $fetch(`${API_URL}/nft/get-upgrade-rate`, { method: 'POST', body: {}, signal })
   ])
 
-  return {
+  return parseSnapshot({
     fetchedAt: new Date().toISOString(),
-    income: income.data,
-    presets: presets.data.array
-      .map(preset => ({ id: preset.id, power: preset.power, energyEfficiency: preset.energyEfficiency, priceUsdt: preset.priceUsdt, level: preset.level }))
-      .sort((a, b) => a.energyEfficiency - b.energyEfficiency || a.power - b.power),
-    upgrades: {
-      powerUpgradePriceConfig: upgrades.data.powerUpgradePriceConfig,
-      energyEfficiencyUpgradePriceConfig: upgrades.data.energyEfficiencyUpgradePriceConfig
-    }
-  }
+    income: unwrap(income, 'data'),
+    presets: unwrap(unwrap(presets, 'data'), 'array'),
+    upgrades: unwrap(upgrades, 'data')
+  })
 }
 
 // Rejects anything normalizeMarket cannot read, so a bad reading can never replace a good stored one.
@@ -54,12 +57,12 @@ export async function storeGoMining (snapshot: GoMiningSnapshot): Promise<Market
     serviceUsdPerThDay: market.serviceUsdPerThDay
   }
   // The cron is the only writer and runs once a day, so this read-modify-write has nothing to race.
-  const series = await store().getItem<HistoryPoint[]>(SERIES_KEY) ?? []
+  const series = await seriesStore().getItem(SERIES_KEY) ?? []
   const nextSeries = [...series.filter(entry => entry.date !== day), point].sort((a, b) => a.date.localeCompare(b.date))
   await Promise.all([
-    store().setItem(STORAGE_KEY, snapshot),
-    store().setItem(`${HISTORY_PREFIX}${day}`, snapshot),
-    store().setItem(SERIES_KEY, nextSeries)
+    readingStore().setItem(STORAGE_KEY, snapshot),
+    readingStore().setItem(`${HISTORY_PREFIX}${day}`, snapshot),
+    seriesStore().setItem(SERIES_KEY, nextSeries)
   ])
   return market
 }
@@ -67,7 +70,7 @@ export async function storeGoMining (snapshot: GoMiningSnapshot): Promise<Market
 // Never throws: a storage outage must not turn into a failed page render.
 export async function readStoredMarket (): Promise<MarketData | undefined> {
   try {
-    const snapshot = await store().getItem<GoMiningSnapshot>(STORAGE_KEY)
+    const snapshot = await readingStore().getItem(STORAGE_KEY)
     return snapshot ? normalizeMarket(snapshot, 'snapshot') : undefined
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -79,7 +82,7 @@ export async function readStoredMarket (): Promise<MarketData | undefined> {
 // The recorded payout series, oldest first. Never throws: the chart shows an empty state instead.
 export async function readMarketHistory (): Promise<HistoryPoint[]> {
   try {
-    return await store().getItem<HistoryPoint[]>(SERIES_KEY) ?? []
+    return await seriesStore().getItem(SERIES_KEY) ?? []
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Market history is unreadable', error)

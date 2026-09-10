@@ -23,10 +23,6 @@ export interface MiningEstimate {
   serviceCostC2: number
   // Price of the miner, USD.
   price: number
-  // GoMining's listed price for this power at the efficiency it sells.
-  listedPrice: number
-  // What this efficiency subtracts from the listed price, USD (negative below the reference efficiency).
-  efficiencyAdjustment: number
   // Annual return on the investment, %.
   rateOfInvestment: number
   power: number
@@ -54,7 +50,7 @@ export const useInvest = (getMarket: () => MarketData) => {
   }
 
   function maxPower () {
-    return Math.max(...ladders().flatMap(ladder => ladder.presets[ladder.presets.length - 1].power))
+    return Math.max(...ladders().map(ladder => ladder.presets[ladder.presets.length - 1].power))
   }
 
   // Price of `power` TH on one published ladder, interpolated between the sizes GoMining lists so that every
@@ -126,33 +122,16 @@ export const useInvest = (getMarket: () => MarketData) => {
     return atEfficiency - reference
   }
 
-  function priceBreakdown (power: number, efficiency: number) {
-    const reference = round(priceOnLadder(ladders()[0], power))
-    const price = round(priceAt(power, efficiency))
-    return { listedPrice: reference, efficiencyAdjustment: round(price - reference), price }
-  }
-
   function minerPrice (power: number, efficiency: number) {
-    if (!(power > 0) || !Number.isInteger(efficiency) || efficiency < minEfficiency() || efficiency > maxEfficiency()) {
-      return NaN
-    }
-    const price = priceAt(power, efficiency)
-    return price > 0 ? round(price) : NaN
-  }
-
-  // Price of one more TH at this size, from the slope of the curve at that efficiency.
-  function marginalPrice (power: number, efficiency: number) {
-    return round(priceAt(power + 1, efficiency) - priceAt(power, efficiency))
+    return round(priceAt(power, efficiency))
   }
 
   // GoMining's published cost to improve a miner's efficiency, summed over the W/TH steps crossed.
   // Confirmed against its own upgrade quotes: $1.10 per step from 15 to 19, $2.667 from 12 to 14.
   function efficiencyUpgradeCost (fromEfficiency: number, toEfficiency: number, power: number) {
-    const prices = getMarket().efficiencyUpgradePrices
-    let perTerahash = 0
-    for (let level = toEfficiency; level < fromEfficiency; level++) {
-      perTerahash += prices[level] ?? 0
-    }
+    const perTerahash = getMarket().efficiencyUpgradeSteps
+      .filter(step => step.toLevel >= toEfficiency && step.toLevel < fromEfficiency)
+      .reduce((total, step) => total + step.priceUsd, 0)
     return round(perTerahash * power)
   }
 
@@ -188,14 +167,11 @@ export const useInvest = (getMarket: () => MarketData) => {
   }
 
   function rateOfInvestment (moneyToSpend: number, potentialProfit: number) {
-    if (moneyToSpend === 0) {
-      return 0
-    }
     return round(365 / (moneyToSpend / potentialProfit) * 100)
   }
 
   function estimate (efficiency: number, power: number, userDiscount: number, satoshiReward: number, btcPrice: number, investment?: number): MiningEstimate {
-    const breakdown = priceBreakdown(power, efficiency)
+    const price = minerPrice(power, efficiency)
     const potentialProfit = profit(satoshiReward * power, btcPrice, powerCost(efficiency, power, userDiscount), serviceCost(userDiscount, power))
 
     return {
@@ -203,10 +179,8 @@ export const useInvest = (getMarket: () => MarketData) => {
       profit: potentialProfit,
       powerCostC1: powerCost(efficiency, power, userDiscount),
       serviceCostC2: serviceCost(userDiscount, power),
-      price: breakdown.price,
-      listedPrice: breakdown.listedPrice,
-      efficiencyAdjustment: breakdown.efficiencyAdjustment,
-      rateOfInvestment: rateOfInvestment(investment ?? breakdown.price, potentialProfit),
+      price,
+      rateOfInvestment: rateOfInvestment(investment ?? price, potentialProfit),
       power,
       efficiency
     }
@@ -226,7 +200,7 @@ export const useInvest = (getMarket: () => MarketData) => {
     for (const level of efficiencies) {
       for (let power = 1; power <= powerLimit; power++) {
         const cost = minerPrice(power, level)
-        if (Number.isNaN(cost) || cost > moneyToSpend) {
+        if (cost > moneyToSpend) {
           break
         }
 
@@ -243,13 +217,11 @@ export const useInvest = (getMarket: () => MarketData) => {
       powerCostC1: 0,
       serviceCostC2: 0,
       price: 0,
-      listedPrice: 0,
-      efficiencyAdjustment: 0,
       rateOfInvestment: 0,
       power: 0,
       efficiency: efficiencies[0]
     }
   }
 
-  return { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
+  return { nftProfitCalculator, bestOption, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
 }

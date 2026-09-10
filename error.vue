@@ -24,7 +24,7 @@ function returnToCalculator () {
     <main id="error-content" class="mx-auto flex w-[min(1240px,calc(100%_-_96px))] flex-1 items-center justify-center py-16 to-1100:w-[calc(100%_-_56px)] to-800:w-[calc(100%_-_40px)] to-700:py-8 to-480:w-[calc(100%_-_32px)]">
       <section class="grid w-full max-w-[1020px] grid-cols-[1fr_1.15fr] items-center gap-16 rounded-3xl border border-border bg-panel bg-[image:radial-gradient(ellipse_at_15%_50%,#7950ad12,transparent_60%),none] p-16 to-1000:gap-8 to-1000:p-10 to-700:max-w-[480px] to-700:grid-cols-[1fr] to-700:gap-8 to-700:rounded-[18px] to-700:px-6 to-700:py-8 to-700:text-center" aria-labelledby="error-title">
         <div class="flex min-h-[300px] min-w-0 flex-col items-center justify-center gap-5 rounded-2xl bg-[linear-gradient(#a68aff09_1px,transparent_1px),linear-gradient(90deg,#a68aff09_1px,transparent_1px)] bg-[length:28px_28px] to-700:min-h-[180px] to-700:gap-4" aria-hidden="true">
-          <span class="font-display text-[length:clamp(96px,12vw,164px)] font-[750] leading-none tracking-[-.08em] text-[#b49af3] [text-shadow:0_12px_64px_#a68aff1f] to-700:text-[112px]">{{ error.statusCode || 500 }}</span>
+          <span class="font-display text-[length:clamp(96px,12vw,164px)] font-[750] leading-none tracking-[-.08em] text-[#b49af3] [text-shadow:0_12px_64px_#a68aff1f] to-700:text-[112px]">{{ error.statusCode }}</span>
           <div class="flex max-w-full items-center gap-2 rounded-[7px] border border-[#51405f] bg-[#221d30] px-3 py-2 text-center text-[12px] tracking-[1px] text-[#c7b4e8]">
             <span class="inline-block h-1.5 w-1.5 shrink-0 rounded-[50%] bg-purple" />
             {{ isNotFound ? 'PAGE NOT FOUND' : 'SOMETHING WENT WRONG' }}

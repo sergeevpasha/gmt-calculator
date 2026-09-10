@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   // build point somewhere else instead. .cache is already ignored by the dev
   // watcher and by git, so a build there does not disturb a running server.
   buildDir: process.env.NUXT_BUILD_DIR || '.nuxt',
-  devtools: { enabled: true }.enabled,
+  devtools: { enabled: true },
   nitro: {
     vercel: {
       config: {
@@ -25,7 +25,6 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         {
-          hid: 'description',
           name: 'description',
           content: 'Easy to use calculator to estimate the profitability of mining Bitcoin with gmt.io'
         },

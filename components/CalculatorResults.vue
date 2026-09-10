@@ -1,18 +1,7 @@
 <script setup lang="ts">
-interface MiningResult {
-  reward: number
-  profit: number
-  powerCostC1: number
-  serviceCostC2: number
-  price: number
-  listedPrice: number
-  efficiencyAdjustment: number
-  rateOfInvestment: number
-  power: number
-  efficiency: number
-}
-interface UpgradeOption { efficiency: number, cost: number, savingPerDay: number, paybackDays: number | null }
-const props = defineProps<{ result: MiningResult | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, referenceEfficiency: number, upgrades?: UpgradeOption[], nft?: boolean }>()
+import type { MiningEstimate, UpgradeOption } from '~/composables/useInvest'
+
+const props = defineProps<{ result: MiningEstimate | null, investment: number, btcPrice: number, stale: boolean, idPrefix: string, upgrades?: UpgradeOption[], nft?: boolean }>()
 const formatPrecise = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
 const period = ref(30)
 const periods = [{ label: 'Day', days: 1 }, { label: 'Month', days: 30 }, { label: 'Year', days: 365 }]
@@ -20,7 +9,7 @@ const formatMoney = (value: number) => new Intl.NumberFormat('en-US', { style: '
 const profit = computed(() => props.result?.profit ?? 0)
 const annualProfit = computed(() => profit.value * 365)
 const dailyReward = computed(() => Number(((props.result?.reward ?? 0) / 100000000 * props.btcPrice).toFixed(2)))
-const payback = computed(() => profit.value > 0 && props.investment > 0 ? Math.ceil(props.investment / profit.value) : null)
+const payback = computed(() => profit.value > 0 ? Math.ceil(props.investment / profit.value) : null)
 const graphMaximum = computed(() => Math.max(10, Math.ceil(Math.abs(annualProfit.value) / 4 / 10) * 10 * 4))
 const graphEnd = computed(() => 151 - Math.abs(annualProfit.value) / graphMaximum.value * 123)
 const graphPath = computed(() => annualProfit.value >= 0 ? `M 0 151 L 600 ${graphEnd.value}` : `M 0 28 L 600 ${179 - graphEnd.value}`)
@@ -166,7 +155,7 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
           </div>
         </div>
       </div>
-      <div v-if="nft && upgrades && upgrades.length" class="mt-[17px] rounded-[14px] border border-border bg-panel px-5 py-[17px]">
+      <div v-if="upgrades?.length" class="mt-[17px] rounded-[14px] border border-border bg-panel px-5 py-[17px]">
         <div :class="detailHeading">
           <span class="text-[#ae93e8]"><AppIcon name="bolt" class="h-4 w-4" /></span><h3 :class="detailTitle">
             Worth upgrading?

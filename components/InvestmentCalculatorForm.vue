@@ -1,31 +1,32 @@
 <script setup lang="ts">
 import { useInvest } from '~/composables/useInvest'
+import type { MiningEstimate } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
-const props = defineProps<{ btcPrice: number, reward: number, market: MarketData }>()
+// `reward` is null while its field is empty, which is not the same as a reward of zero.
+const props = defineProps<{ btcPrice: number, reward: number | null, market: MarketData }>()
 const { bestOption, minerPrice, minEfficiency, maxEfficiency } = useInvest(() => props.market)
-const moneyToSpend = ref<number | string>(1000)
-const userDiscount = ref<number | string>(10)
+const moneyToSpend = ref<number | ''>(1000)
+const userDiscount = ref<number | ''>(10)
 // 0 compares every efficiency level and picks the most profitable miner.
 const efficiency = ref(0)
 const efficiencyLevels = computed(() => Array.from({ length: maxEfficiency() - minEfficiency() + 1 }, (_, index) => minEfficiency() + index))
 const efficiencyOptions = computed(() => [{ value: 0, label: 'Best value for the budget' }, ...efficiencyLevels.value])
-const soldEfficiency = computed(() => props.market.referenceEfficiency)
-const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(level => minerPrice(1, level)).filter(Number.isFinite)))
-const result = ref<ReturnType<typeof bestOption> | null>(null)
+const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(level => minerPrice(1, level))))
+const result = ref<MiningEstimate | null>(null)
 const calculatedInvestment = ref(1000)
 const error = ref('')
 const isStale = ref(false)
 const calculatedBtcPrice = ref(props.btcPrice)
 
 function calculate () {
-  const investment = Number(moneyToSpend.value)
-  const discount = Number(userDiscount.value)
-  if (!Number.isFinite(investment) || investment < 1 || investment > 1000000 || userDiscount.value === '' || !Number.isFinite(discount) || discount < 0 || discount > 100) {
+  const investment = moneyToSpend.value
+  const discount = userDiscount.value
+  if (investment === '' || investment < 1 || investment > 1000000 || discount === '' || discount < 0 || discount > 100) {
     error.value = 'Enter an investment from $1 to $1,000,000 and a discount from 0 to 100%.'
     return
   }
-  if (!Number.isFinite(props.btcPrice) || props.btcPrice <= 0 || props.btcPrice > 10000000 || !Number.isFinite(props.reward) || props.reward < 0 || props.reward > 1000000) {
+  if (props.btcPrice <= 0 || props.btcPrice > 10000000 || props.reward === null || props.reward < 0 || props.reward > 1000000) {
     error.value = 'Check your Bitcoin price and daily mining reward above.'
     result.value = null
     return
@@ -42,10 +43,7 @@ function calculate () {
 }
 
 watch([moneyToSpend, userDiscount, efficiency], () => { isStale.value = true })
-watch(() => props.market, () => {
-  if (efficiency.value && !efficiencyLevels.value.includes(efficiency.value)) { efficiency.value = 0 }
-  calculate()
-})
+watch(() => props.market, calculate)
 watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
 </script>
 <template>
@@ -121,7 +119,6 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
       :investment="calculatedInvestment"
       :btc-price="calculatedBtcPrice"
       :stale="isStale"
-      :reference-efficiency="soldEfficiency"
       id-prefix="investment"
     />
   </div>

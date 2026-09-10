@@ -12,18 +12,10 @@ export const useMarketData = () => {
   async function refresh () {
     if (pending.value) { return }
     pending.value = true
-    try {
-      const response = await fetch('/api/market', { signal: AbortSignal.timeout(10000) })
-      if (!response.ok) { throw new Error('Market data unavailable') }
-      const data: MarketData = await response.json()
-      if (!Number.isFinite(data.rewardSatPerThDay) || !data.miners?.length) { throw new Error('Invalid market data') }
-      market.value = data
-      status.value = data.source === 'live' ? 'live' : 'snapshot'
-    } catch {
-      status.value = market.value.source === 'live' ? 'live' : 'snapshot'
-    } finally {
-      pending.value = false
-    }
+    // If the request fails the page keeps the data it already shows, and the status says which that is.
+    market.value = await $fetch('/api/market', { signal: AbortSignal.timeout(10000) }).catch(() => market.value)
+    status.value = market.value.source
+    pending.value = false
   }
 
   return { market, status, pending, refresh }

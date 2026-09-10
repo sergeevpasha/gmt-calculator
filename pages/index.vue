@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { marketSnapshot } from '~/data/gomining'
+import { isRecord } from '~/utils/isRecord'
 
 const { market, status: marketStatus, pending: marketPending, refresh: refreshMarket } = useMarketData()
-const btcPrice = ref<number | string>(Math.round(marketSnapshot.btcPriceUsd))
-const reward = ref<number | string>(marketSnapshot.rewardSatPerThDay)
+// v-model on a number input yields a number, or '' while the field is empty.
+const btcPrice = ref<number | ''>(Math.round(marketSnapshot.btcPriceUsd))
+const reward = ref<number | ''>(marketSnapshot.rewardSatPerThDay)
 const activeTab = ref<'investment' | 'nft'>('investment')
 // The selected tab's colour and the underline drawn beneath it.
 const activeTabClass = 'text-[#b599ff] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-purple'
@@ -54,10 +56,11 @@ async function getCurrentBTCPrice () {
   try {
     const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', { signal: priceRequest.signal })
     if (!response.ok) { throw new Error('Price unavailable') }
-    const data = await response.json()
-    if (!Number.isFinite(data.bitcoin?.usd) || data.bitcoin.usd <= 0) { throw new Error('Invalid price') }
+    const data: unknown = await response.json()
+    const usd = isRecord(data) && isRecord(data.bitcoin) ? data.bitcoin.usd : undefined
+    if (typeof usd !== 'number' || usd <= 0) { throw new Error('Invalid price') }
     if (!priceEdited) {
-      btcPrice.value = data.bitcoin.usd
+      btcPrice.value = usd
       priceStatus.value = 'live'
     }
   } catch {
@@ -216,10 +219,10 @@ onBeforeUnmount(() => priceRequest?.abort())
       </button>
     </div>
     <div v-show="activeTab === 'investment'" id="investment-panel" role="tabpanel" aria-labelledby="investment-tab">
-      <InvestmentCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? NaN : Number(reward)" :market="market" />
+      <InvestmentCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? null : reward" :market="market" />
     </div>
     <div v-show="activeTab === 'nft'" id="nft-panel" role="tabpanel" aria-labelledby="nft-tab">
-      <NFTCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? NaN : Number(reward)" :market="market" />
+      <NFTCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? null : reward" :market="market" />
     </div>
 
     <PayoutHistory />

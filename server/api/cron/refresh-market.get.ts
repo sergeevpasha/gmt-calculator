@@ -1,5 +1,5 @@
-// Daily job declared in vercel.json. Reads GoMining once and stores the result, so the site has a
-// durable last-known-good reading instead of the snapshot frozen into the bundle at build time.
+// Daily job declared in nuxt.config.ts. Reads GoMining once and stores the result, so the site has
+// a durable last-known-good reading instead of the snapshot frozen into the bundle at build time.
 //
 // Vercel sends `Authorization: Bearer $CRON_SECRET` when CRON_SECRET is set on the project. Without
 // that variable the route stays closed rather than open, so a missing secret cannot expose it.

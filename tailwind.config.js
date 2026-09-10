@@ -4,7 +4,6 @@ import plugin from 'tailwindcss/plugin'
 export default {
   content: [
     './components/**/*.{js,vue,ts}',
-    './layouts/**/*.vue',
     './pages/**/*.vue',
     './plugins/**/*.{js,ts}',
     './app.vue',
@@ -29,7 +28,6 @@ export default {
       colors: {
         bg: '#0c0e15',
         panel: '#131620',
-        'panel-raised': '#191c28',
         border: '#282b38',
         text: '#f2f2f7',
         label: '#cccadb',

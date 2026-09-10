@@ -1,10 +1,3 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'GoMiningIcon'
-})
-</script>
 <template>
   <svg xmlns="http://www.w3.org/2000/svg" width="137" height="28" viewBox="0 0 137 28" fill="none">
     <path
@@ -24,10 +17,7 @@ export default defineComponent({
       fill="currentColor"
       fill-rule="evenodd"
     />
-    <g fill="#7540ef">
-      <circle cx="14" cy="14" r="14" />
-      <circle cx="14" cy="14" r="14" />
-    </g>
+    <circle cx="14" cy="14" r="14" fill="#7540ef" />
     <path
       d="M14.22 4.2a10.1 10.1 0 0 0-4.309.962 9.78 9.78 0 0 0-5.146 5.611 9.57 9.57 0 0 0 .41 7.446c2.368 4.881 8.352 6.947 13.338 4.632 1.264-.588 2.386-1.425 3.312-2.458a9.74 9.74 0 0 0 1.977-3.527l-2.101-2.85 2.048-2.797h-2.885l-2.048 2.761 2.119 2.832-.018.036c-1.603 3.598-5.93 5.255-9.616 3.67-1.799-.784-3.188-2.209-3.882-4.008-.677-1.764-.641-3.67.125-5.398 1.603-3.598 5.912-5.255 9.616-3.67a7.23 7.23 0 0 1 2.903 2.245h3.17C21.503 6.231 17.941 4.2 14.22 4.2zm4.863 7h-2.867l-2.083 2.779 2.083 2.761h2.867l-2.012-2.761 2.012-2.779z"
       fill="#fff"

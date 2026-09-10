@@ -24,9 +24,9 @@ function loadModule (filename) {
   return exports
 }
 
-const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket } = loadModule('data/gomining')
+const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket, parseSnapshot } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, marginalPrice, priceAt, energyBonus, priceBreakdown, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -35,7 +35,6 @@ const rawSnapshot = () => JSON.parse(readFileSync(resolve(root, 'data/gomining-s
 function assertAccounting (result, btcPrice) {
   const gross = round(result.reward / 100000000 * btcPrice)
   assert.equal(result.profit, round(gross - result.powerCostC1 - result.serviceCostC2))
-  assert.equal(result.price, round(result.listedPrice + result.efficiencyAdjustment))
   Object.values(result).forEach(value => assert.ok(Number.isFinite(value)))
 }
 
@@ -57,11 +56,20 @@ test('every calculator input comes from the fetched snapshot, nothing is hardcod
 
 test('malformed API responses are rejected instead of producing zero prices', () => {
   const snapshot = rawSnapshot()
-  assert.throws(() => normalizeMarket({ ...snapshot, income: { ...snapshot.income, btcCourseInUsd: 0 } }, 'live'))
-  assert.throws(() => normalizeMarket({ ...snapshot, presets: [] }, 'live'))
-  assert.throws(() => normalizeMarket({ ...snapshot, presets: snapshot.presets.filter(preset => preset.power !== 1) }, 'live'))
-  assert.throws(() => normalizeMarket({ ...snapshot, upgrades: { ...snapshot.upgrades, powerUpgradePriceConfig: [] } }, 'live'))
-  assert.equal(normalizeMarket(snapshot, 'live').source, 'live')
+  const read = value => normalizeMarket(parseSnapshot(value), 'live')
+  assert.throws(() => read({ ...snapshot, income: { ...snapshot.income, btcCourseInUsd: 0 } }))
+  assert.throws(() => read({ ...snapshot, income: { ...snapshot.income, createdAt: undefined } }))
+  assert.throws(() => read({ ...snapshot, presets: [] }))
+  assert.throws(() => read({ ...snapshot, presets: snapshot.presets.filter(preset => preset.power !== 1) }))
+  assert.throws(() => read({ ...snapshot, upgrades: { ...snapshot.upgrades, powerUpgradePriceConfig: [] } }))
+  assert.equal(read(snapshot).source, 'live')
+})
+
+test('unusable rows are dropped and the rest of a response still reads', () => {
+  const snapshot = rawSnapshot()
+  const parsed = parseSnapshot({ ...snapshot, presets: [...snapshot.presets, { power: '1', energyEfficiency: 12, priceUsdt: 5 }, null] })
+  assert.equal(parsed.presets.length, snapshot.presets.length)
+  assert.deepEqual(normalizeMarket(parsed, 'live').ladders, marketSnapshot.ladders)
 })
 
 test('every listed size on every published ladder costs exactly what GoMining charges', () => {
@@ -115,22 +123,6 @@ test('a worse efficiency costs less up front at every size', () => {
       assert.ok(minerPrice(power, efficiency) < minerPrice(power, efficiency - 1))
     }
   }
-  assert.ok(Number.isNaN(minerPrice(1, 21)))
-  assert.ok(Number.isNaN(minerPrice(1, 11)))
-  assert.ok(Number.isNaN(minerPrice(1, 12.5)))
-})
-
-test('price breakdown adds up and the marginal follows the curve at that efficiency', () => {
-  const breakdown = priceBreakdown(128, 20)
-  assert.equal(breakdown.price, round(breakdown.listedPrice + breakdown.efficiencyAdjustment))
-  assert.equal(breakdown.listedPrice, round(marketSnapshot.miners.find(miner => miner.power === 128).priceUsd))
-  for (const efficiency of [12, 15, 20]) {
-    assert.equal(marginalPrice(128, efficiency), round(priceAt(129, efficiency) - priceAt(128, efficiency)))
-    assert.ok(marginalPrice(128, efficiency) > 0)
-  }
-  // A worse efficiency must always make the next TH cheaper.
-  assert.ok(marginalPrice(128, 20) < marginalPrice(128, 15))
-  assert.ok(marginalPrice(128, 15) < marginalPrice(128, 12))
 })
 
 test('efficiency upgrade costs match GoMinings own quotes for a 128 TH miner at 20 W/TH', () => {

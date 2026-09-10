@@ -1,30 +1,20 @@
 <script setup lang="ts">
+import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
 const props = defineProps<{ market: MarketData, btcPrice: number, priceLabel: string, rewardLabel: string, live: boolean }>()
+const { energyBonus, maxEfficiency } = useInvest(() => props.market)
 
 const money = (value: number, digits = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)
 const number = (value: number, digits = 2) => new Intl.NumberFormat('en-US', { maximumFractionDigits: digits }).format(value)
 const stamp = (value: string) => new Date(value).toLocaleString('en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC'
 
 const electricityPerWatt = computed(() => props.market.kwhPriceUsd * 24 / 1000)
-const ladder = computed(() => [...props.market.miners].sort((a, b) => a.power - b.power))
 // What one TH is worth at each supported efficiency, straight from GoMining's valuation steps.
-const energyBonuses = computed(() => {
-  const steps = props.market.powerUpgradeSteps
-  const reference = steps.filter(step => step.toLevel >= props.market.referenceEfficiency).reduce((total, step) => total + step.priceUsd, 0)
-  const rows = []
-  for (let efficiency = props.market.referenceEfficiency; efficiency <= 20; efficiency++) {
-    const at = steps.filter(step => step.toLevel >= efficiency).reduce((total, step) => total + step.priceUsd, 0)
-    rows.push({ efficiency, bonus: at - reference })
-  }
-  return rows
-})
-
-// What GoMining charges an owner to improve one TH by one W / TH, best level first.
-const upgradeRates = computed(() => Object.entries(props.market.efficiencyUpgradePrices)
-  .map(([efficiency, priceUsd]) => ({ efficiency: Number(efficiency), priceUsd }))
-  .sort((a, b) => a.efficiency - b.efficiency))
+const energyBonuses = computed(() => Array.from({ length: maxEfficiency() - props.market.referenceEfficiency + 1 }, (_, index) => {
+  const efficiency = props.market.referenceEfficiency + index
+  return { efficiency, bonus: energyBonus(efficiency) }
+}))
 
 // GoMining's 365-day average payout against today's. Every return on this page is built from today's
 // rate, so this says whether today is running hot or cold. normalizeMarket falls back to today's figure
@@ -147,7 +137,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="miner in ladder" :key="miner.power">
+                <tr v-for="miner in market.miners" :key="miner.power">
                   <td :class="tdFirst">
                     {{ number(miner.power) }} TH
                   </td>
@@ -203,12 +193,12 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in upgradeRates" :key="row.efficiency">
+              <tr v-for="step in market.efficiencyUpgradeSteps" :key="step.toLevel">
                 <td :class="tdFirst">
-                  {{ row.efficiency }} W / TH
+                  {{ step.toLevel }} W / TH
                 </td>
                 <td :class="tdRest">
-                  {{ money(row.priceUsd, 3) }}
+                  {{ money(step.priceUsd, 3) }}
                 </td>
               </tr>
             </tbody>

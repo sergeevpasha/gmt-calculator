@@ -4,18 +4,10 @@ import type { HistoryPoint } from '~/data/gomining'
 const points = ref<HistoryPoint[]>([])
 const status = ref<'loading' | 'ready' | 'error'>('loading')
 
-const isPoint = (value: unknown): value is HistoryPoint => {
-  const point = value as HistoryPoint
-  return !!point && typeof point.date === 'string' && Number.isFinite(point.rewardUsdPerThDay) && Number.isFinite(point.rewardSatPerThDay) && Number.isFinite(point.btcPriceUsd)
-}
-
 // Loaded after the page renders, like the market data: the calculators never wait on it.
 onMounted(async () => {
   try {
-    const response = await fetch('/api/market/history', { signal: AbortSignal.timeout(10000) })
-    if (!response.ok) { throw new Error('Market history unavailable') }
-    const data = await response.json()
-    points.value = (Array.isArray(data?.points) ? data.points : []).filter(isPoint)
+    points.value = (await $fetch('/api/market/history', { signal: AbortSignal.timeout(10000) })).points
     status.value = 'ready'
   } catch {
     status.value = 'error'
