@@ -8,6 +8,7 @@ const UPSTREAM_TIMEOUT = 8000
 // unreachable. Backed by whatever driver nitro.storage mounts at `market`; with none mounted this is
 // per-instance memory, so reads simply miss and the bundled snapshot answers instead.
 const STORAGE_KEY = 'snapshot'
+const HISTORY_PREFIX = 'history:'
 const store = () => useStorage<GoMiningSnapshot>('market')
 
 // The three public endpoints the calculators run on, trimmed to the shape gomining-snapshot.json holds
@@ -34,9 +35,16 @@ export async function readGoMining (): Promise<GoMiningSnapshot> {
 }
 
 // Rejects anything normalizeMarket cannot read, so a bad reading can never replace a good stored one.
+// Writes the reading twice: once as the current fallback, once under GoMining's own payout date to
+// build a day-by-day series. Keying history by that date rather than by write time means a re-run,
+// or a retry after a failure, corrects the day in place instead of adding a duplicate.
 export async function storeGoMining (snapshot: GoMiningSnapshot): Promise<MarketData> {
   const market = normalizeMarket(snapshot, 'snapshot')
-  await store().setItem(STORAGE_KEY, snapshot)
+  const day = market.incomeDate.slice(0, 10)
+  await Promise.all([
+    store().setItem(STORAGE_KEY, snapshot),
+    store().setItem(`${HISTORY_PREFIX}${day}`, snapshot)
+  ])
   return market
 }
 
