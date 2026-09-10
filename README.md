@@ -28,7 +28,7 @@ docker compose exec -T -e NUXT_BUILD_DIR=.cache/nuxt-build -e NITRO_PRESET=verce
 
 That runs the same Vercel preset the deploy uses, so it catches build failures before pushing.
 
-The container runs Node 24, matching the `engines.node` pin that Vercel builds against. Use `yarn install --frozen-lockfile` and keep `yarn.lock`.
+The container runs Node 24, the same major the Vercel project is set to build with. Use `yarn install --frozen-lockfile` and keep `yarn.lock`.
 
 ## Branding
 
