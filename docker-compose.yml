@@ -23,6 +23,8 @@ services:
       - /tmp
     environment:
       HOST: 0.0.0.0
+      # Set to exercise /api/cron/refresh-market locally; unset the route stays closed.
+      CRON_SECRET: '${CRON_SECRET:-}'
     networks:
       - default-network
 networks:

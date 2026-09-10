@@ -6,6 +6,16 @@ export default defineNuxtConfig({
   // watcher and by git, so a build there does not disturb a running server.
   buildDir: process.env.NUXT_BUILD_DIR || '.nuxt',
   devtools: { enabled: true }.enabled,
+  nitro: {
+    vercel: {
+      config: {
+        // Refresh the stored market reading daily. GoMining publishes the payout around 03:31 UTC.
+        // Declared here rather than in vercel.json because the Vercel preset builds through the
+        // Build Output API, so .vercel/output/config.json is what the platform actually reads.
+        crons: [{ path: '/api/cron/refresh-market', schedule: '0 4 * * *' }]
+      }
+    }
+  },
   app: {
     head: {
       title: 'Gomining calculator',
