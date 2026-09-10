@@ -212,6 +212,8 @@ onBeforeUnmount(() => priceRequest?.abort())
       <NFTCalculatorForm :btc-price="Number(btcPrice)" :reward="reward === '' ? NaN : Number(reward)" :market="market" />
     </div>
 
+    <PayoutHistory />
+
     <CalculationSources
       :market="market"
       :btc-price="Number(btcPrice)"

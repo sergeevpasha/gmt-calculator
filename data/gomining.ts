@@ -65,6 +65,17 @@ export interface EfficiencyLadder {
   presets: MinerPreset[]
 }
 
+// One day of the payout series the daily cron records, derived through normalizeMarket so every figure
+// matches what the calculators use. `date` is GoMining's payout date, not the day the cron ran.
+export interface HistoryPoint {
+  date: string
+  rewardUsdPerThDay: number
+  rewardSatPerThDay: number
+  btcPriceUsd: number
+  kwhPriceUsd: number
+  serviceUsdPerThDay: number
+}
+
 export interface MarketData {
   source: 'live' | 'snapshot'
   fetchedAt: string
