@@ -52,58 +52,72 @@ const axisDates = computed(() => {
   const middle = list[Math.floor((list.length - 1) / 2)]
   return [list[0], middle, list[list.length - 1]].map(point => day(point.date))
 })
+// Class groups for the elements the template repeats.
+const tileValue = 'mb-2 mt-[7px] block font-display text-[20px] font-[650] tracking-[-.5px] tabular-nums [overflow-wrap:anywhere]'
+const thFirst = 'sticky top-0 border-b border-border bg-panel pb-1.5 text-left font-normal text-dim'
+const thRest = 'sticky top-0 border-b border-border bg-panel pb-1.5 text-right font-normal text-dim'
+const tdFirst = 'border-b border-[#22252f] px-0 py-[5px] text-label'
+const tdRest = 'border-b border-[#22252f] px-0 py-[5px] text-right text-muted'
 </script>
 
 <template>
-  <section class="history-panel" aria-labelledby="history-title">
-    <div class="history-heading">
-      <span class="small-icon"><AppIcon name="clock" /></span>
-      <div>
-        <h2 id="history-title">
+  <section class="mt-6 rounded-2xl border border-border bg-panel px-[26px] py-[23px] to-800:p-5 to-480:p-[17px]" aria-labelledby="history-title">
+    <div class="flex items-center gap-[13px] to-800:flex-wrap">
+      <span class="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[#202030] text-[#ada1cc]"><AppIcon name="clock" class="h-5 w-5" /></span>
+      <div class="min-w-0 flex-1">
+        <h2 id="history-title" class="text-[14px] font-[550]">
           Payout history
         </h2>
-        <p>GoMining's daily pool payout per TH, recorded once a day after it publishes.</p>
+        <p class="mt-1 text-[12px] text-dim">
+          GoMining's daily pool payout per TH, recorded once a day after it publishes.
+        </p>
       </div>
-      <span v-if="points.length" class="history-stamp"><span class="status-dot" />{{ points.length }} {{ points.length === 1 ? 'day' : 'days' }} since {{ day(points[0].date) }}</span>
+      <span v-if="points.length" class="flex shrink-0 items-center gap-1.5 text-[12px] text-green to-800:w-full"><span class="inline-block h-[5px] w-[5px] shrink-0 rounded-[50%] bg-green" />{{ points.length }} {{ points.length === 1 ? 'day' : 'days' }} since {{ day(points[0].date) }}</span>
     </div>
 
-    <p v-if="status === 'loading'" class="history-empty">
+    <p v-if="status === 'loading'" class="mt-[18px] text-[12px] leading-[1.6] text-dim">
       Loading the recorded payouts…
     </p>
-    <p v-else-if="status === 'error'" class="history-empty">
+    <p v-else-if="status === 'error'" class="mt-[18px] text-[12px] leading-[1.6] text-dim">
       The payout history is unavailable right now. The calculators above are unaffected.
     </p>
-    <p v-else-if="!points.length" class="history-empty">
+    <p v-else-if="!points.length" class="mt-[18px] text-[12px] leading-[1.6] text-dim">
       Recording starts with the next daily reading, shortly after GoMining publishes its payout around 03:30 UTC.
     </p>
 
     <template v-else>
-      <div class="history-stats" :class="{ 'is-single': points.length === 1 }">
-        <article>
-          <span>Latest payout</span>
-          <strong>{{ money(latest.rewardUsdPerThDay) }} <small>/ TH / day</small></strong>
-          <p>{{ day(latest.date) }} · {{ number(latest.rewardSatPerThDay) }} sat / TH at {{ money(latest.btcPriceUsd, 0) }} BTC</p>
+      <div class="mt-5 grid gap-3 to-800:grid-cols-[minmax(0,1fr)]" :class="points.length === 1 ? 'max-w-[420px] grid-cols-[minmax(0,1fr)]' : 'grid-cols-3'">
+        <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
+          <span class="block text-[12px] text-muted">Latest payout</span>
+          <strong :class="tileValue">{{ money(latest.rewardUsdPerThDay) }} <small class="font-sans text-[12px] font-normal tracking-normal text-dim">/ TH / day</small></strong>
+          <p class="text-[12px] leading-[1.6] text-dim">
+            {{ day(latest.date) }} · {{ number(latest.rewardSatPerThDay) }} sat / TH at {{ money(latest.btcPriceUsd, 0) }} BTC
+          </p>
         </article>
         <template v-if="points.length > 1">
-          <article>
-            <span>Lowest recorded</span>
-            <strong>{{ money(lowest.rewardUsdPerThDay) }}</strong>
-            <p>{{ day(lowest.date) }}</p>
+          <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
+            <span class="block text-[12px] text-muted">Lowest recorded</span>
+            <strong :class="tileValue">{{ money(lowest.rewardUsdPerThDay) }}</strong>
+            <p class="text-[12px] leading-[1.6] text-dim">
+              {{ day(lowest.date) }}
+            </p>
           </article>
-          <article>
-            <span>Highest recorded</span>
-            <strong>{{ money(highest.rewardUsdPerThDay) }}</strong>
-            <p>{{ day(highest.date) }}</p>
+          <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
+            <span class="block text-[12px] text-muted">Highest recorded</span>
+            <strong :class="tileValue">{{ money(highest.rewardUsdPerThDay) }}</strong>
+            <p class="text-[12px] leading-[1.6] text-dim">
+              {{ day(highest.date) }}
+            </p>
           </article>
         </template>
       </div>
 
-      <div v-if="points.length > 1" class="chart-layout">
-        <div class="chart-axis">
+      <div v-if="points.length > 1" class="mt-5 flex gap-2.5">
+        <div class="flex h-[170px] w-[62px] shrink-0 flex-col justify-between pb-3 pt-[22px] text-[11px] tabular-nums text-dim to-480:w-[54px] to-480:text-[10px]">
           <span v-for="(tick, index) in ticks" :key="index">{{ tick }}</span>
         </div>
-        <div class="chart-plot">
-          <svg class="history-chart" viewBox="0 0 600 170" preserveAspectRatio="none" role="img" :aria-label="`Daily payout per TH over ${points.length} recorded days, from ${money(points[0].rewardUsdPerThDay)} on ${day(points[0].date)} to ${money(latest.rewardUsdPerThDay)} on ${day(latest.date)}.`">
+        <div class="min-w-0 flex-1">
+          <svg class="block h-[170px] w-full overflow-visible text-green" viewBox="0 0 600 170" preserveAspectRatio="none" role="img" :aria-label="`Daily payout per TH over ${points.length} recorded days, from ${money(points[0].rewardUsdPerThDay)} on ${day(points[0].date)} to ${money(latest.rewardUsdPerThDay)} on ${day(latest.date)}.`">
             <defs><linearGradient id="history-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".18" /><stop offset="100%" stop-color="currentColor" stop-opacity="0" /></linearGradient></defs>
             <path
               v-for="line in [28, 58.75, 89.5, 120.25, 151]"
@@ -124,41 +138,51 @@ const axisDates = computed(() => {
             />
             <circle :cx="x(points.length - 1)" :cy="y(latest.rewardUsdPerThDay)" r="4" fill="currentColor" />
           </svg>
-          <div class="chart-dates">
+          <div class="mt-2 flex justify-between text-[12px] text-dim">
             <span v-for="(label, index) in axisDates" :key="index">{{ label }}</span>
           </div>
         </div>
       </div>
-      <p v-else class="history-note">
+      <p v-else class="mt-[18px] text-[12px] leading-[1.6] text-dim">
         One reading so far. The chart draws itself once a second day is recorded. GoMining publishes no earlier daily history, so the series grows from here rather than being filled in.
       </p>
 
-      <details class="history-detail">
-        <summary><AppIcon name="chevron" />Every recorded day</summary>
-        <div class="table-scroll">
-          <table>
+      <details class="group mt-[18px] border-t border-border pt-[15px]">
+        <summary class="focus-ring flex cursor-pointer list-none items-center gap-2 text-[12px] text-muted hover:text-text [&::-webkit-details-marker]:hidden">
+          <AppIcon name="chevron" class="h-[15px] w-[15px] [transition:transform_.2s] group-open:rotate-180 motion-reduce:transition-none" />Every recorded day
+        </summary>
+        <div class="mt-3.5 max-h-[260px] overflow-auto">
+          <table class="w-full min-w-[360px] border-collapse text-[12px] tabular-nums">
             <thead>
               <tr>
-                <th scope="col">
+                <th scope="col" :class="thFirst">
                   Payout date
                 </th>
-                <th scope="col">
+                <th scope="col" :class="thRest">
                   Per TH
                 </th>
-                <th scope="col">
+                <th scope="col" :class="thRest">
                   sat / TH
                 </th>
-                <th scope="col">
+                <th scope="col" :class="thRest">
                   BTC price
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="point in newestFirst" :key="point.date">
-                <td>{{ day(point.date) }}</td>
-                <td>{{ money(point.rewardUsdPerThDay, 6) }}</td>
-                <td>{{ number(point.rewardSatPerThDay) }}</td>
-                <td>{{ money(point.btcPriceUsd, 0) }}</td>
+                <td :class="tdFirst">
+                  {{ day(point.date) }}
+                </td>
+                <td :class="tdRest">
+                  {{ money(point.rewardUsdPerThDay, 6) }}
+                </td>
+                <td :class="tdRest">
+                  {{ number(point.rewardSatPerThDay) }}
+                </td>
+                <td :class="tdRest">
+                  {{ money(point.btcPriceUsd, 0) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -167,48 +191,3 @@ const axisDates = computed(() => {
     </template>
   </section>
 </template>
-
-<style scoped>
-.history-panel { margin-top: 24px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); padding: 23px 26px; }
-.history-heading { display: flex; align-items: center; gap: 13px; }
-.history-heading h2 { font-size: 14px; font-weight: 550; }
-.history-heading > div:nth-child(2) { flex: 1; min-width: 0; }
-.history-heading p { color: var(--dim); font-size: 12px; margin-top: 4px; }
-.history-stamp { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); flex-shrink: 0; }
-.history-stamp .status-dot { width: 5px; height: 5px; background: var(--green); }
-.history-empty, .history-note { margin-top: 18px; font-size: 12px; line-height: 1.6; color: var(--dim); }
-.history-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
-.history-stats.is-single { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
-.history-stats article { border: 1px solid var(--border); border-radius: 12px; background: #0f111a80; padding: 15px 17px; min-width: 0; }
-.history-stats span { display: block; font-size: 12px; color: var(--muted); }
-.history-stats strong { display: block; margin: 7px 0 8px; font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 650; letter-spacing: -.5px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.history-stats small { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 400; color: var(--dim); letter-spacing: 0; }
-.history-stats p { font-size: 12px; color: var(--dim); line-height: 1.6; }
-.chart-layout { display: flex; gap: 10px; margin-top: 20px; }
-.chart-axis { width: 62px; height: 170px; display: flex; flex-shrink: 0; flex-direction: column; justify-content: space-between; padding: 22px 0 12px; font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
-.chart-plot { flex: 1; min-width: 0; }
-.history-chart { width: 100%; height: 170px; color: var(--green); overflow: visible; display: block; }
-.chart-dates { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--dim); }
-.history-detail { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 15px; }
-.history-detail summary { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); cursor: pointer; list-style: none; }
-.history-detail summary::-webkit-details-marker { display: none; }
-.history-detail summary:hover { color: var(--text); }
-.history-detail summary svg { width: 15px; height: 15px; transition: transform .2s; }
-.history-detail[open] summary svg { transform: rotate(180deg); }
-.table-scroll { max-height: 260px; overflow: auto; margin-top: 14px; }
-table { width: 100%; min-width: 360px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
-th { text-align: left; font-weight: 400; color: var(--dim); padding-bottom: 6px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel); }
-td { padding: 5px 0; color: var(--muted); border-bottom: 1px solid #22252f; }
-td:first-child { color: #cccadb; }
-td + td, th + th { text-align: right; }
-@media (max-width: 800px) {
-  .history-panel { padding: 20px; }
-  .history-heading { flex-wrap: wrap; }
-  .history-stamp { width: 100%; }
-  .history-stats { grid-template-columns: minmax(0, 1fr); }
-}
-@media (max-width: 480px) {
-  .history-panel { padding: 17px; }
-  .chart-axis { width: 54px; font-size: 10px; }
-}
-</style>

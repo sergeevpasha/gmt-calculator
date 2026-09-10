@@ -5,6 +5,8 @@ const { market, status: marketStatus, pending: marketPending, refresh: refreshMa
 const btcPrice = ref<number | string>(Math.round(marketSnapshot.btcPriceUsd))
 const reward = ref<number | string>(marketSnapshot.rewardSatPerThDay)
 const activeTab = ref<'investment' | 'nft'>('investment')
+// The selected tab's colour and the underline drawn beneath it.
+const activeTabClass = 'text-[#b599ff] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-purple'
 const priceStatus = ref<'loading' | 'live' | 'gomining' | 'cached' | 'sample' | 'custom'>('loading')
 const rewardStatus = ref<'loading' | 'live' | 'snapshot' | 'custom'>('loading')
 const fetchingPrice = ref(false)
@@ -104,46 +106,51 @@ onMounted(refreshAll)
 onBeforeUnmount(() => priceRequest?.abort())
 </script>
 <template>
-  <div class="calculator-page">
-    <section class="page-intro" aria-labelledby="page-title">
+  <div class="pb-[34px] pt-[43px] from-1600:pt-[60px] to-800:pt-[30px]">
+    <section class="mb-8 flex items-center justify-between from-1600:mb-10 to-480:mb-[25px]" aria-labelledby="page-title">
       <div>
-        <div class="eyebrow">
-          <span /> LESS GUESSWORK. MORE PERSPECTIVE.
+        <div class="mb-[13px] flex items-center gap-2 text-[12px] font-[650] tracking-[1.9px] text-[#a29aac] to-480:tracking-[.8px]">
+          <span class="h-[2px] w-[13px] bg-purple" /> LESS GUESSWORK. MORE PERSPECTIVE.
         </div>
-        <h1 id="page-title">
-          Your mining. <span>Your numbers.</span>
+        <h1 id="page-title" class="font-display text-[length:clamp(28px,3vw,39px)] font-[650] leading-[1.25] tracking-[-1.5px] to-480:text-[28px] to-480:tracking-[-1.2px]">
+          Your mining. <span class="text-purple">Your numbers.</span>
         </h1>
-        <p>Find the potential in your next investment.</p>
+        <p class="mt-[11px] text-[16px] text-muted">
+          Find the potential in your next investment.
+        </p>
       </div>
-      <div class="intro-mark">
-        <GoMiningMark role="img" aria-label="GoMining" />
+      <div class="grid h-[67px] w-[67px] place-items-center rounded-[20px] border border-[#9b76f030] bg-[linear-gradient(140deg,#9b76f016,#9b76f002)] to-800:hidden">
+        <GoMiningMark class="h-[38px] w-[38px]" role="img" aria-label="GoMining" />
       </div>
     </section>
 
-    <section class="market-panel" aria-label="Market assumptions">
-      <div class="market-heading">
-        <span class="small-icon"><AppIcon name="settings" /></span>
+    <section class="grid grid-cols-[.95fr_1.2fr_1fr] gap-6 rounded-2xl border border-border bg-panel px-[26px] py-[23px] to-1100:grid-cols-[.85fr_1.2fr_1fr] to-1100:gap-4 to-1100:p-5 to-800:grid-cols-[1fr_1fr] to-800:gap-[18px] to-600:grid-cols-[1fr] to-480:gap-4 to-480:p-[17px]" aria-label="Market assumptions">
+      <div class="flex items-center gap-[13px] to-800:col-span-full to-800:border-b to-800:border-border to-800:pb-4">
+        <span class="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[#202030] text-[#ada1cc] to-1100:hidden to-800:grid"><AppIcon name="settings" class="h-5 w-5" /></span>
         <div>
-          <h2>Market assumptions</h2>
-          <p id="market-edit-hint">
+          <h2 class="text-[14px] font-[550]">
+            Market assumptions
+          </h2>
+          <p id="market-edit-hint" class="mt-1 text-[12px] text-dim">
             Edit values for both calculators
           </p>
-          <p class="market-meta">
-            <span class="status-dot" :class="{ 'is-live': marketStatus === 'live' }" />{{ marketLabel }}
+          <p class="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] leading-[1.5] text-dim">
+            <span class="inline-block h-[5px] w-[5px] shrink-0 rounded-[50%]" :class="marketStatus === 'live' ? 'bg-green' : 'bg-[#9d8fc1]'" />{{ marketLabel }}
           </p>
-          <p class="market-meta">
-            Electricity <strong>{{ formatFee(market.kwhPriceUsd) }}</strong> / kWh · Service <strong>{{ formatFee(market.serviceUsdPerThDay) }}</strong> / TH / day
+          <p class="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] leading-[1.5] text-dim">
+            Electricity <strong class="font-medium text-label">{{ formatFee(market.kwhPriceUsd) }}</strong> / kWh · Service <strong class="font-medium text-label">{{ formatFee(market.serviceUsdPerThDay) }}</strong> / TH / day
           </p>
         </div>
       </div>
-      <div class="market-field">
-        <span class="currency-icon">₿</span>
-        <div class="market-field-content">
-          <label for="btc-price">Bitcoin price <span>USD</span></label>
-          <div class="market-input-line">
-            <span aria-hidden="true">$</span><input
+      <div class="flex min-w-0 items-center gap-[13px] border-l border-border pl-[27px] to-1100:gap-[9px] to-1100:pl-[18px] to-800:border-0 to-800:pl-0 to-480:items-start to-480:gap-2">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[50%] bg-[#33271c] text-[22px] text-[#efb577] to-600:self-center">₿</span>
+        <div class="min-w-0 flex-1">
+          <label for="btc-price" class="mb-2 flex items-baseline gap-2 text-[14px] text-label to-1100:block">Bitcoin price <span class="text-[12px] text-dim to-1100:ml-1 to-600:inline to-600:ml-[5px]">USD</span></label>
+          <div class="relative text-[21px] font-[550]">
+            <span aria-hidden="true" class="pointer-events-none absolute left-[13px] top-1/2 -translate-y-1/2 text-[#b3afc5]">$</span><input
               id="btc-price"
               v-model.number="btcPrice"
+              class="no-spinner block h-[49px] w-full min-w-0 cursor-text text-ellipsis rounded-[9px] border border-[#68617c] bg-[#0f111a] pl-[31px] pr-[13px] text-[21px] font-[550] leading-[1.5] text-text tabular-nums [transition:border-color_.2s,box-shadow_.2s] hover:border-[#a18cbf] focus:border-purple focus:outline focus:outline-[3px] focus:outline-offset-0 focus:outline-[#9674f52b] motion-reduce:transition-none"
               type="number"
               min="0.01"
               max="10000000"
@@ -153,19 +160,20 @@ onBeforeUnmount(() => priceRequest?.abort())
               @input="updatePrice"
             >
           </div>
-          <span id="btc-price-status" class="price-status" :class="{ 'is-live': priceStatus === 'live' }"><span v-if="priceStatus === 'live'" class="status-dot" />{{ priceLabel }}</span>
+          <span id="btc-price-status" class="mt-[7px] flex items-center gap-[5px] text-[12px] leading-[1.5]" :class="priceStatus === 'live' ? 'text-green' : 'text-dim'"><span v-if="priceStatus === 'live'" class="inline-block h-1 w-1 shrink-0 rounded-[50%] bg-green" />{{ priceLabel }}</span>
         </div>
-        <button class="icon-button" type="button" aria-label="Refresh Bitcoin price and GoMining data" :disabled="fetchingPrice || marketPending" @click="refreshAll">
-          <AppIcon name="refresh" :class="{ spinning: fetchingPrice || marketPending }" />
+        <button class="transition-control focus-ring grid h-8 w-8 place-items-center rounded-lg border border-border bg-transparent text-muted hover:bg-[#28243b] hover:text-purple disabled:cursor-wait disabled:opacity-[.55] to-600:h-9 to-600:w-9 to-600:shrink-0 to-600:self-center" type="button" aria-label="Refresh Bitcoin price and GoMining data" :disabled="fetchingPrice || marketPending" @click="refreshAll">
+          <AppIcon name="refresh" class="h-[15px] w-[15px] shrink-0" :class="{ 'animate-spin-slow motion-reduce:animate-none': fetchingPrice || marketPending }" />
         </button>
       </div>
-      <div class="market-field reward-field">
-        <span class="reward-icon"><AppIcon name="bolt" /></span>
-        <div class="market-field-content">
-          <label for="satoshi-reward">Daily mining reward <span>sat / TH</span></label>
+      <div class="flex min-w-0 items-center gap-[13px] border-l border-border pl-[27px] to-1100:gap-[9px] to-1100:pl-[18px] to-600:border-l-0 to-600:border-t to-600:pb-0 to-600:pl-0 to-600:pr-0 to-600:pt-4 to-480:items-start to-480:gap-2">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[50%] bg-[#27213e] text-[22px] text-[#b599ff] to-600:self-center"><AppIcon name="bolt" class="h-[18px] w-[18px]" /></span>
+        <div class="min-w-0 flex-1">
+          <label for="satoshi-reward" class="mb-2 flex items-baseline gap-2 text-[14px] text-label to-1100:block">Daily mining reward <span class="text-[12px] text-dim to-1100:ml-1 to-600:inline to-600:ml-[5px]">sat / TH</span></label>
           <input
             id="satoshi-reward"
             v-model.number="reward"
+            class="no-spinner block h-[49px] w-full min-w-0 cursor-text text-ellipsis rounded-[9px] border border-[#68617c] bg-[#0f111a] px-[13px] text-[21px] font-[550] leading-[1.5] text-text tabular-nums [transition:border-color_.2s,box-shadow_.2s] hover:border-[#a18cbf] focus:border-purple focus:outline focus:outline-[3px] focus:outline-offset-0 focus:outline-[#9674f52b] motion-reduce:transition-none"
             type="number"
             min="0"
             max="1000000"
@@ -174,35 +182,37 @@ onBeforeUnmount(() => priceRequest?.abort())
             aria-describedby="market-edit-hint satoshi-reward-hint"
             @input="updateReward"
           >
-          <span id="satoshi-reward-hint" class="price-status" :class="{ 'is-live': rewardStatus === 'live' }"><span v-if="rewardStatus === 'live'" class="status-dot" />{{ rewardLabel }}</span>
+          <span id="satoshi-reward-hint" class="mt-[7px] flex items-center gap-[5px] text-[12px] leading-[1.5]" :class="rewardStatus === 'live' ? 'text-green' : 'text-dim'"><span v-if="rewardStatus === 'live'" class="inline-block h-1 w-1 shrink-0 rounded-[50%] bg-green" />{{ rewardLabel }}</span>
         </div>
       </div>
     </section>
 
-    <div class="calculator-tabs" role="tablist" aria-label="Calculator type" @keydown="switchTab">
+    <div class="my-6 flex gap-[31px] border-b border-border to-480:mt-[19px] to-480:gap-[18px] to-360:gap-[14px]" role="tablist" aria-label="Calculator type" @keydown="switchTab">
       <button
         id="investment-tab"
+        class="transition-control focus-ring relative flex items-center gap-[9px] border-0 bg-transparent pb-[19px] pt-[13px] text-[14px] hover:text-text to-480:gap-[7px] to-360:text-[12px]"
+        :class="activeTab === 'investment' ? activeTabClass : 'text-muted'"
         type="button"
         role="tab"
         :aria-selected="activeTab === 'investment'"
         aria-controls="investment-panel"
         :tabindex="activeTab === 'investment' ? 0 : -1"
-        :class="{ active: activeTab === 'investment' }"
         @click="activeTab = 'investment'"
       >
-        <AppIcon name="chart" />Investment calculator
+        <AppIcon name="chart" class="h-[17px] w-[17px] shrink-0 to-480:h-[15px] to-480:w-[15px]" />Investment calculator
       </button>
       <button
         id="nft-tab"
+        class="transition-control focus-ring relative flex items-center gap-[9px] border-0 bg-transparent pb-[19px] pt-[13px] text-[14px] hover:text-text to-480:gap-[7px] to-360:text-[12px]"
+        :class="activeTab === 'nft' ? activeTabClass : 'text-muted'"
         type="button"
         role="tab"
         :aria-selected="activeTab === 'nft'"
         aria-controls="nft-panel"
         :tabindex="activeTab === 'nft' ? 0 : -1"
-        :class="{ active: activeTab === 'nft' }"
         @click="activeTab = 'nft'"
       >
-        <AppIcon name="chip" />NFT calculator
+        <AppIcon name="chip" class="h-[17px] w-[17px] shrink-0 to-480:h-[15px] to-480:w-[15px]" />NFT calculator
       </button>
     </div>
     <div v-show="activeTab === 'investment'" id="investment-panel" role="tabpanel" aria-labelledby="investment-tab">
@@ -222,8 +232,10 @@ onBeforeUnmount(() => priceRequest?.abort())
       :live="marketStatus === 'live'"
     />
 
-    <div class="estimate-note">
-      <AppIcon name="info" /><p>A little perspective: these are estimates, not guarantees. Returns assume a constant BTC price and mining reward, without reinvestment. Network conditions, fees, and GoMining's prices may change.</p>
+    <div class="mt-6 flex items-start gap-2.5 rounded-[10px] border border-[#242733] bg-[#13162080] px-[18px] py-[15px] to-480:p-[13px]">
+      <AppIcon name="info" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-dim" /><p class="text-[12px] leading-[1.7] text-dim">
+        A little perspective: these are estimates, not guarantees. Returns assume a constant BTC price and mining reward, without reinvestment. Network conditions, fees, and GoMining's prices may change.
+      </p>
     </div>
   </div>
 </template>

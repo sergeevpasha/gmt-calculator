@@ -19,6 +19,8 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Gomining calculator',
+      htmlAttrs: { class: 'min-w-[320px] scroll-smooth [color-scheme:dark] motion-reduce:scroll-auto' },
+      bodyAttrs: { class: 'bg-bg text-[16px] text-text [-webkit-font-smoothing:antialiased]' },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
@@ -30,6 +32,9 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#0c0e15' }
       ],
       link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
@@ -46,7 +51,7 @@ export default defineNuxtConfig({
       pathPrefix: false
     }
   ],
-  css: ['~/assets/scss/app.scss'],
+  css: ['~/assets/css/tailwind.css'],
   modules: [
     '@nuxtjs/eslint-module',
     'nuxt-gtag'

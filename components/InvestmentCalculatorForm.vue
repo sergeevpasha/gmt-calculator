@@ -49,16 +49,18 @@ watch(() => props.market, () => {
 watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
 </script>
 <template>
-  <div class="calculator-workspace">
-    <form class="setup-panel" @submit.prevent="calculate">
-      <div class="panel-heading">
-        <AppIcon name="settings" /><h2>Set up your investment</h2>
+  <div class="grid grid-cols-[355px_minmax(0,1fr)] gap-6 [align-items:start] to-1100:grid-cols-[310px_minmax(0,1fr)] to-1100:gap-[18px] to-800:grid-cols-[1fr]">
+    <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5" @submit.prevent="calculate">
+      <div class="mb-[7px] flex items-center gap-2.5">
+        <AppIcon name="settings" class="h-[19px] w-[19px] text-purple" /><h2 class="text-[17px] font-[550] tracking-[-.3px]">
+          Set up your investment
+        </h2>
       </div>
-      <p class="panel-description">
+      <p class="text-[16px] leading-[1.6] text-muted">
         A few details. A clearer picture.
       </p>
-      <div class="form-fields">
-        <div class="investment-amount">
+      <div class="mb-6 mt-[26px] flex flex-col gap-[23px] to-800:grid to-800:grid-cols-[1fr_1fr] to-800:gap-5 to-480:grid-cols-[1fr] to-480:gap-x-[13px] to-480:gap-y-[19px]">
+        <div class="to-800:col-span-full">
           <BaseInput
             id="investment-amount"
             v-model="moneyToSpend"
@@ -72,12 +74,13 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
               $
             </template>
           </BaseInput>
-          <div class="amount-presets" aria-label="Investment presets">
+          <div class="mt-2.5 grid grid-cols-[repeat(4,1fr)] gap-[7px]" aria-label="Investment presets">
             <button
               v-for="amount in [500, 1000, 5000, 10000]"
               :key="amount"
               type="button"
-              :class="{ selected: moneyToSpend === amount }"
+              class="transition-control focus-ring min-h-[34px] rounded-md border py-[7px] text-[12px] hover:border-[#684d9c] hover:bg-[#27203b] hover:text-[#c2acff]"
+              :class="moneyToSpend === amount ? 'border-[#684d9c] bg-[#27203b] text-[#c2acff]' : 'border-border bg-[#1c1e2b] text-muted'"
               :aria-pressed="moneyToSpend === amount"
               @click="moneyToSpend = amount"
             >
@@ -96,19 +99,21 @@ watch(() => [props.btcPrice, props.reward], calculate, { immediate: true })
           unit="%"
         >
           <template #label-extra>
-            <span class="discount-badge">On maintenance</span>
+            <span class="rounded bg-[#a68aff12] px-1.5 py-0.5 text-[12px] text-[#b4a1e0] to-480:hidden">On maintenance</span>
           </template>
         </BaseInput>
       </div>
-      <p v-if="error" class="form-error" role="alert">
+      <p v-if="error" class="mb-[15px] text-[14px] leading-[1.5] text-[#ffb0b6]" role="alert">
         {{ error }}
       </p>
       <BaseButton type="submit" label="Calculate returns" />
-      <p class="setup-footnote" aria-live="polite">
-        <AppIcon :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
+      <p class="mt-3.5 flex items-center justify-center gap-1.5 text-[12px] text-dim" aria-live="polite">
+        <AppIcon class="h-[13px] w-[13px]" :name="error ? 'info' : isStale ? 'refresh' : 'check'" />{{ error ? 'Check your inputs to calculate.' : isStale ? 'Inputs changed. Calculate to update.' : 'Your estimate is up to date' }}
       </p>
-      <div class="calculation-tip">
-        <AppIcon name="bolt" /><p><strong>Make every terahash count.</strong>We price every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH with GoMining's own valuation formula, then pick the best daily return for your budget.</p>
+      <div class="mt-[23px] flex gap-[11px] border-t border-border pt-[19px] to-800:mt-[18px] to-800:pt-4">
+        <AppIcon name="bolt" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-purple" /><p class="text-[12px] leading-[1.7] text-muted">
+          <strong class="mb-[3px] block font-medium text-[#d0cddd]">Make every terahash count.</strong>We price every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH with GoMining's own valuation formula, then pick the best daily return for your budget.
+        </p>
       </div>
     </form>
     <CalculatorResults
