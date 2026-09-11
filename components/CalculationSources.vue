@@ -2,7 +2,7 @@
 import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
-const props = defineProps<{ market: MarketData, btcPrice: number, priceLabel: string, rewardLabel: string, live: boolean }>()
+const props = defineProps<{ market: MarketData, btcPrice: number, priceLabel: string, live: boolean }>()
 const { energyBonus, maxEfficiency } = useInvest(() => props.market)
 
 const money = (value: number, digits = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)
@@ -34,7 +34,6 @@ const endpoints = [
   { label: 'Efficiency upgrade rates', value: 'POST api.gomining.com/api/nft/get-upgrade-rate' },
   { label: 'Bitcoin price', value: 'GET api.coingecko.com/api/v3/simple/price' }
 ]
-// Class groups for the elements the template repeats.
 const tileValue = 'mb-2 mt-[7px] block font-display text-[20px] font-[650] tracking-[-.5px] tabular-nums [overflow-wrap:anywhere] to-480:text-[18px]'
 const tileText = 'text-[12px] leading-[1.6] text-dim'
 const headingClass = 'mb-2.5 text-[12px] font-[550] text-label'
@@ -57,7 +56,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
           Where these numbers come from
         </h2>
         <p class="mt-1 text-[12px] text-dim">
-          Every input below is read from GoMining, so you can check the maths yourself.
+          The figures behind every estimate, and where each one comes from.
         </p>
       </div>
       <span class="flex shrink-0 items-center gap-1.5 text-[12px] to-800:w-full" :class="live ? 'text-green' : 'text-dim'"><span class="inline-block h-[5px] w-[5px] shrink-0 rounded-[50%]" :class="live ? 'bg-green' : 'bg-[#9d8fc1]'" />{{ live ? 'Live' : 'Snapshot' }} · {{ stamp(market.fetchedAt) }}</span>
@@ -68,21 +67,21 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
         <span class="block text-[12px] text-muted">Daily pool payout</span>
         <strong :class="tileValue">{{ number(market.rewardSatPerThDay) }} <small class="font-sans text-[12px] font-normal tracking-normal text-dim">sat / TH</small></strong>
         <p :class="tileText">
-          {{ money(market.rewardUsdPerThDay, 6) }} per TH per day. GoMining payout for {{ stamp(market.incomeDate) }}. {{ rewardLabel }}.
+          {{ money(market.rewardUsdPerThDay, 6) }} per TH per day. GoMining payout for {{ stamp(market.incomeDate) }}.
         </p>
       </article>
       <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
         <span class="block text-[12px] text-muted">Bitcoin price</span>
         <strong :class="tileValue">{{ money(btcPrice) }}</strong>
         <p :class="tileText">
-          {{ priceLabel }}. GoMining valued its own payout at {{ money(market.btcPriceUsd) }}.
+          {{ priceLabel }}. GoMining used {{ money(market.btcPriceUsd) }} per BTC for its payout.
         </p>
       </article>
       <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
         <span class="block text-[12px] text-muted">Electricity</span>
         <strong :class="tileValue">{{ money(market.kwhPriceUsd, 3) }} <small class="font-sans text-[12px] font-normal tracking-normal text-dim">/ kWh</small></strong>
         <p :class="tileText">
-          {{ money(electricityPerWatt, 6) }} per TH per W / TH per day. GoMining bills the rate its data centres pay.
+          Each W / TH costs {{ money(electricityPerWatt, 4) }} per TH per day, so 1 TH at {{ market.referenceEfficiency }} W / TH costs {{ money(electricityPerWatt * market.referenceEfficiency, 4) }} a day.
         </p>
       </article>
       <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
@@ -96,7 +95,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
         <span class="block text-[12px] text-muted">Base miner price</span>
         <strong :class="tileValue">{{ money(market.basePriceUsd) }} <small class="font-sans text-[12px] font-normal tracking-normal text-dim">/ 1 TH</small></strong>
         <p :class="tileText">
-          GoMining's listed price for 1 TH at {{ market.referenceEfficiency }} W / TH. It publishes full ladders at {{ market.ladders.map(l => l.efficiency).join(' and ') }} W / TH, and every listed size costs exactly what GoMining charges.
+          GoMining's price for a 1 TH miner at {{ market.referenceEfficiency }} W / TH. It lists prices for set sizes at {{ market.ladders.map(l => l.efficiency).join(' and ') }} W / TH. Those prices are used as listed, and everything else is worked out from them.
         </p>
       </article>
       <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">
@@ -119,7 +118,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
       <div class="mt-[18px] grid grid-cols-3 gap-[26px] to-1100:grid-cols-2 to-1100:gap-[22px] to-480:grid-cols-1">
         <div>
           <h3 :class="headingClass">
-            {{ market.referenceEfficiency }} W / TH listed ladder
+            {{ market.referenceEfficiency }} W / TH price list
           </h3>
           <div class="max-h-[260px] overflow-y-auto">
             <table class="w-full border-collapse text-[12px] tabular-nums">
@@ -221,7 +220,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
             <li><span :class="listLabel">Service fee per day</span><code :class="listCode">{{ money(market.serviceUsdPerThDay, 4) }} × TH × (1 − discount)</code></li>
             <li><span :class="listLabel">Mining reward per day</span><code :class="listCode">{{ number(market.rewardSatPerThDay) }} sat × TH ÷ 100,000,000 × BTC price</code></li>
             <li><span :class="listLabel">Net profit per day</span><code :class="listCode">reward − electricity − service</code></li>
-            <li><span :class="listLabel">Miner price</span><code :class="listCode">{{ market.ladders.map(l => l.efficiency).join('/') }} W/TH from GoMining's listed ladder; levels between them interpolated; worse levels stepped down by the valuation rate</code></li>
+            <li><span :class="listLabel">Miner price</span><code :class="listCode">{{ market.ladders.map(l => l.efficiency).join('/') }} W/TH from GoMining's price lists; levels in between interpolated; higher W/TH priced down by GoMining's value per W/TH</code></li>
             <li><span :class="listLabel">Annual ROI</span><code :class="listCode">net profit × 365 ÷ investment</code></li>
             <li><span :class="listLabel">Payback</span><code :class="listCode">investment ÷ net profit</code></li>
             <li><span :class="listLabel">Efficiency upgrade</span><code :class="listCode">sum of the per-TH upgrade rates for every W/TH crossed × TH</code></li>

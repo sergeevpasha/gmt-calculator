@@ -83,8 +83,7 @@ export const useInvest = (getMarket: () => MarketData) => {
 
   // GoMining publishes ladders for a couple of efficiencies only. A level it publishes is priced from that
   // ladder exactly. A level between two published ones is interpolated between them at the same power. A level
-  // worse than every published one steps down from the least efficient ladder using GoMining's valuation steps,
-  // which its own upgrade quotes confirm at $0.772 per W/TH between 15 and 19.
+  // worse than every published one steps down from the least efficient ladder using GoMining's valuation steps.
   function priceAt (power: number, efficiency: number) {
     const list = ladders()
     const exact = list.find(ladder => ladder.efficiency === efficiency)
@@ -127,7 +126,6 @@ export const useInvest = (getMarket: () => MarketData) => {
   }
 
   // GoMining's published cost to improve a miner's efficiency, summed over the W/TH steps crossed.
-  // Confirmed against its own upgrade quotes: $1.10 per step from 15 to 19, $2.667 from 12 to 14.
   function efficiencyUpgradeCost (fromEfficiency: number, toEfficiency: number, power: number) {
     const perTerahash = getMarket().efficiencyUpgradeSteps
       .filter(step => step.toLevel >= toEfficiency && step.toLevel < fromEfficiency)

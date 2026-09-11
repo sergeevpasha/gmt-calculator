@@ -44,7 +44,6 @@ const axisDates = computed(() => {
   const middle = list[Math.floor((list.length - 1) / 2)]
   return [list[0], middle, list[list.length - 1]].map(point => day(point.date))
 })
-// Class groups for the elements the template repeats.
 const tileValue = 'mb-2 mt-[7px] block font-display text-[20px] font-[650] tracking-[-.5px] tabular-nums [overflow-wrap:anywhere]'
 const thFirst = 'sticky top-0 border-b border-border bg-panel pb-1.5 text-left font-normal text-dim'
 const thRest = 'sticky top-0 border-b border-border bg-panel pb-1.5 text-right font-normal text-dim'
@@ -74,7 +73,7 @@ const tdRest = 'border-b border-[#22252f] px-0 py-[5px] text-right text-muted'
       The payout history is unavailable right now. The calculators above are unaffected.
     </p>
     <p v-else-if="!points.length" class="mt-[18px] text-[12px] leading-[1.6] text-dim">
-      Recording starts with the next daily reading, shortly after GoMining publishes its payout around 03:30 UTC.
+      Nothing recorded yet. The first day is added after GoMining's next payout, between 04:00 and 05:00 UTC.
     </p>
 
     <template v-else>
@@ -136,7 +135,7 @@ const tdRest = 'border-b border-[#22252f] px-0 py-[5px] text-right text-muted'
         </div>
       </div>
       <p v-else class="mt-[18px] text-[12px] leading-[1.6] text-dim">
-        One reading so far. The chart draws itself once a second day is recorded. GoMining publishes no earlier daily history, so the series grows from here rather than being filled in.
+        One day recorded so far; the chart appears after the second. GoMining doesn't publish past daily payouts, so the history starts here.
       </p>
 
       <details class="group mt-[18px] border-t border-border pt-[15px]">

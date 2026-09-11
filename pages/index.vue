@@ -20,11 +20,11 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString('en-US'
 const formatFee = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
 
 const priceLabel = computed(() => ({
-  loading: 'Sample price · connecting',
+  loading: 'Saved GoMining rate · loading',
   live: 'Live price from CoinGecko',
   gomining: `GoMining payout rate · ${formatDate(market.value.incomeDate)}`,
   cached: 'Last fetched price · refresh unavailable',
-  sample: 'Sample price · live price unavailable',
+  sample: 'Saved GoMining rate · live price unavailable',
   custom: 'Your custom price'
 }[priceStatus.value]))
 
@@ -112,14 +112,11 @@ onBeforeUnmount(() => priceRequest?.abort())
   <div class="pb-[34px] pt-[43px] from-1600:pt-[60px] to-800:pt-[30px]">
     <section class="mb-8 flex items-center justify-between from-1600:mb-10 to-480:mb-[25px]" aria-labelledby="page-title">
       <div>
-        <div class="mb-[13px] flex items-center gap-2 text-[12px] font-[650] tracking-[1.9px] text-[#a29aac] to-480:tracking-[.8px]">
-          <span class="h-[2px] w-[13px] bg-purple" /> LESS GUESSWORK. MORE PERSPECTIVE.
-        </div>
         <h1 id="page-title" class="font-display text-[length:clamp(28px,3vw,39px)] font-[650] leading-[1.25] tracking-[-1.5px] to-480:text-[28px] to-480:tracking-[-1.2px]">
-          Your mining. <span class="text-purple">Your numbers.</span>
+          GoMining <span class="text-purple">profit calculator</span>
         </h1>
         <p class="mt-[11px] text-[16px] text-muted">
-          Find the potential in your next investment.
+          Estimate daily profit, ROI and payback for a GoMining miner from today's payout, fees and prices.
         </p>
       </div>
       <div class="grid h-[67px] w-[67px] place-items-center rounded-[20px] border border-[#9b76f030] bg-[linear-gradient(140deg,#9b76f016,#9b76f002)] to-800:hidden">
@@ -231,13 +228,12 @@ onBeforeUnmount(() => priceRequest?.abort())
       :market="market"
       :btc-price="Number(btcPrice)"
       :price-label="priceLabel"
-      :reward-label="rewardLabel"
       :live="marketStatus === 'live'"
     />
 
     <div class="mt-6 flex items-start gap-2.5 rounded-[10px] border border-[#242733] bg-[#13162080] px-[18px] py-[15px] to-480:p-[13px]">
       <AppIcon name="info" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-dim" /><p class="text-[12px] leading-[1.7] text-dim">
-        A little perspective: these are estimates, not guarantees. Returns assume a constant BTC price and mining reward, without reinvestment. Network conditions, fees, and GoMining's prices may change.
+        These are estimates. They assume today's Bitcoin price and mining reward stay the same and that nothing is reinvested. Network difficulty, fees and GoMining's prices all change over time.
       </p>
     </div>
   </div>

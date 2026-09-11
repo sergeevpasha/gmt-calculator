@@ -24,7 +24,6 @@ const graphTicks = computed(() => [1, 0.75, 0.5, 0.25, 0].map((fraction) => {
   const value = annualProfit.value < 0 ? -graphMaximum.value * (1 - fraction) : graphMaximum.value * fraction
   return formatTick(value)
 }))
-// Class groups for the elements the template repeats.
 const negative = computed(() => profit.value < 0)
 const metricLabel = 'mb-[7px] flex flex-wrap items-center gap-[7px] text-[12px] text-[#b1a3c2]'
 const metricIcon = 'h-[13px] w-[13px] text-[#917da7] to-1100:hidden'
@@ -43,7 +42,7 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
     <div class="mb-[15px] flex items-center justify-between gap-3 to-480:flex-wrap to-480:gap-1.5">
       <h2 class="text-[16px] font-medium to-480:text-[14px]">
         Your estimated returns
-      </h2><span class="flex items-center gap-1.5 text-[12px] text-dim"><span class="inline-block h-[5px] w-[5px] shrink-0 rounded-[50%] bg-[#9d8fc1]" />{{ stale ? 'Previous estimate' : 'Based on your inputs' }}</span>
+      </h2><span v-if="stale" class="flex items-center gap-1.5 text-[12px] text-dim"><span class="inline-block h-[5px] w-[5px] shrink-0 rounded-[50%] bg-[#9d8fc1]" />Previous estimate</span>
     </div>
     <template v-if="result">
       <div class="rounded-[14px] border border-[#423155] bg-[radial-gradient(ellipse_at_88%_4%,#7950ad28,transparent_66%),linear-gradient(110deg,#201b32,#191827)] px-[25px] pb-[23px] pt-[21px] to-1100:p-5 to-480:p-[18px]">
@@ -89,7 +88,7 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
       <div class="mt-[17px] overflow-hidden rounded-[14px] border border-border bg-panel px-[23px] pb-0 pt-5 to-480:px-4 to-480:pt-[19px]">
         <div class="flex items-center justify-between gap-3 to-480:flex-col to-480:items-start to-480:gap-2">
           <h3 class="text-[14px] font-medium">
-            See the bigger picture
+            Next 12 months
           </h3><span class="flex items-center gap-[7px] text-[12px] text-dim"><i class="inline-block h-1.5 w-1.5 rounded-sm bg-[#ad8aee]" /> Cumulative net profit</span>
         </div>
         <div class="mt-2 flex gap-2.5">
@@ -124,14 +123,14 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
           </div>
         </div>
         <div class="-mx-[23px] flex items-center justify-between gap-3 border-t border-border px-[23px] py-[13px] to-480:-mx-4 to-480:flex-wrap to-480:px-4">
-          <span class="text-[12px] text-muted">12 months of potential</span><strong class="flex items-center gap-2 text-[14px] font-medium" :class="negative ? 'text-[#f3a2aa]' : 'text-[#c3a4ff]'">{{ formatMoney(annualProfit) }} <AppIcon name="arrow" class="h-3.5 w-3.5 -rotate-[40deg]" /></strong>
+          <span class="text-[12px] text-muted">Total after 12 months</span><strong class="flex items-center gap-2 text-[14px] font-medium" :class="negative ? 'text-[#f3a2aa]' : 'text-[#c3a4ff]'">{{ formatMoney(annualProfit) }} <AppIcon name="arrow" class="h-3.5 w-3.5 -rotate-[40deg]" /></strong>
         </div>
       </div>
       <div class="mt-[17px] grid grid-cols-[1fr_1fr] gap-4 to-1100:gap-3 to-480:grid-cols-[1fr]">
         <div class="min-w-0 rounded-[14px] border border-border bg-panel px-5 py-[17px] to-1100:p-4">
           <div :class="detailHeading">
             <span class="text-[#ae93e8]"><AppIcon name="chip" class="h-4 w-4" /></span><h3 :class="detailTitle">
-              {{ nft ? 'Your miner' : 'Optimal configuration' }}
+              {{ nft ? 'Your miner' : 'Best miner for this budget' }}
             </h3>
           </div><div :class="detailLine">
             <span class="text-muted">Mining power</span><strong :class="detailValue">{{ result.power.toLocaleString('en-US') }} <small :class="detailUnit">TH</small></strong>
@@ -144,7 +143,7 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
         <div class="min-w-0 rounded-[14px] border border-border bg-panel px-5 py-[17px] to-1100:p-4">
           <div :class="detailHeading">
             <span class="text-[#8bbfaf]"><AppIcon name="bolt" class="h-4 w-4" /></span><h3 :class="detailTitle">
-              The daily breakdown
+              Daily breakdown
             </h3>
           </div><div :class="detailLine">
             <span class="text-muted">Mining reward</span><strong :class="detailValue">{{ formatMoney(dailyReward) }}</strong>
@@ -208,9 +207,9 @@ const tableValue = 'border-b border-[#22252f] px-0 py-1.5 text-right text-muted'
     </template>
     <div v-else class="flex flex-col items-center rounded-[14px] border border-border bg-panel px-[30px] py-[90px] text-center">
       <span class="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[11px] bg-[#202030] text-[#ada1cc]"><AppIcon name="chart" class="h-5 w-5" /></span><h3 class="mb-2 mt-5 text-[18px]">
-        A clearer outlook starts here.
+        No estimate yet
       </h3><p class="max-w-[320px] text-[14px] leading-[1.7] text-muted">
-        Check your inputs to see your estimated returns.
+        Fix the inputs in the form to see one.
       </p>
     </div>
   </section>

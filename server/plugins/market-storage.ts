@@ -7,7 +7,7 @@ import vercelKVDriver from 'unstorage/drivers/vercel-kv'
 //
 // With neither pair present — local dev, or before the store is attached — nothing is mounted and
 // `market` stays on Nitro's default memory storage: the cron's writes are dropped, reads miss, and
-// /api/market falls through to the snapshot bundled at build time, exactly as it did before.
+// /api/market falls through to the snapshot bundled at build time.
 export default defineNitroPlugin(() => {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN

@@ -11,7 +11,7 @@ const userDiscount = ref<number | ''>(10)
 // 0 compares every efficiency level and picks the most profitable miner.
 const efficiency = ref(0)
 const efficiencyLevels = computed(() => Array.from({ length: maxEfficiency() - minEfficiency() + 1 }, (_, index) => minEfficiency() + index))
-const efficiencyOptions = computed(() => [{ value: 0, label: 'Best value for the budget' }, ...efficiencyLevels.value])
+const efficiencyOptions = computed(() => [{ value: 0, label: 'Most profitable for the budget' }, ...efficiencyLevels.value])
 const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(level => minerPrice(1, level))))
 const result = ref<MiningEstimate | null>(null)
 const calculatedInvestment = ref(1000)
@@ -50,11 +50,11 @@ watchEffect(calculate)
     <form class="rounded-2xl border border-border bg-panel p-[26px] to-1100:p-[22px] to-480:p-5">
       <div class="mb-[7px] flex items-center gap-2.5">
         <AppIcon name="settings" class="h-[19px] w-[19px] text-purple" /><h2 class="text-[17px] font-[550] tracking-[-.3px]">
-          Set up your investment
+          Find a miner to buy
         </h2>
       </div>
       <p class="text-[16px] leading-[1.6] text-muted">
-        A few details. A clearer picture.
+        Enter a budget to see the most profitable miner it can buy.
       </p>
       <div class="mb-6 mt-[26px] flex flex-col gap-[23px] to-800:grid to-800:grid-cols-[1fr_1fr] to-800:gap-5 to-480:grid-cols-[1fr] to-480:gap-x-[13px] to-480:gap-y-[19px]">
         <div class="to-800:col-span-full">
@@ -105,7 +105,7 @@ watchEffect(calculate)
       </p>
       <div class="mt-[23px] flex gap-[11px] border-t border-border pt-[19px] to-800:mt-[18px] to-800:pt-4">
         <AppIcon name="bolt" class="mt-0.5 h-[17px] w-[17px] shrink-0 text-purple" /><p class="text-[12px] leading-[1.7] text-muted">
-          <strong class="mb-[3px] block font-medium text-[#d0cddd]">Make every terahash count.</strong>We price every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH with GoMining's own valuation formula, then pick the best daily return for your budget.
+          <strong class="mb-[3px] block font-medium text-[#d0cddd]">How the miner is picked</strong>We price every efficiency from {{ minEfficiency() }} to {{ maxEfficiency() }} W / TH with GoMining's own valuation formula, then pick the best daily return for your budget.
         </p>
       </div>
     </form>

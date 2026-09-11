@@ -18,7 +18,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Gomining calculator',
+      title: 'GoMining profit calculator · GMT Calculator',
       htmlAttrs: { class: 'min-w-[320px] scroll-smooth [color-scheme:dark] motion-reduce:scroll-auto' },
       bodyAttrs: { class: 'bg-bg text-[16px] text-text [-webkit-font-smoothing:antialiased]' },
       meta: [
@@ -26,7 +26,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         {
           name: 'description',
-          content: 'Easy to use calculator to estimate the profitability of mining Bitcoin with gmt.io'
+          content: "Estimate daily profit, ROI and payback for a GoMining miner from GoMining's live payout, fees and prices, including what efficiency upgrades cost."
         },
         { name: 'theme-color', content: '#0c0e15' }
       ],

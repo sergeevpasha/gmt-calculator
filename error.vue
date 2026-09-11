@@ -27,33 +27,27 @@ function returnToCalculator () {
           <span class="font-display text-[length:clamp(96px,12vw,164px)] font-[750] leading-none tracking-[-.08em] text-[#b49af3] [text-shadow:0_12px_64px_#a68aff1f] to-700:text-[112px]">{{ error.statusCode }}</span>
           <div class="flex max-w-full items-center gap-2 rounded-[7px] border border-[#51405f] bg-[#221d30] px-3 py-2 text-center text-[12px] tracking-[1px] text-[#c7b4e8]">
             <span class="inline-block h-1.5 w-1.5 shrink-0 rounded-[50%] bg-purple" />
-            {{ isNotFound ? 'PAGE NOT FOUND' : 'SOMETHING WENT WRONG' }}
+            {{ isNotFound ? 'PAGE NOT FOUND' : 'ERROR' }}
           </div>
         </div>
 
         <div class="min-w-0">
-          <p class="mb-4 flex items-center gap-2 text-[12px] font-[650] tracking-[1.9px] text-[#a29aac] to-700:justify-center to-480:tracking-[.8px]">
-            <span class="h-[2px] w-[13px] bg-purple" /> {{ isNotFound ? 'A SMALL DETOUR' : 'A MOMENTARY PAUSE' }}
-          </p>
           <h1 v-if="isNotFound" id="error-title" :class="titleClass">
-            This page is<br><span class="text-purple">off the grid.</span>
+            Nothing at<br><span class="text-purple">this address</span>
           </h1>
           <h1 v-else id="error-title" :class="titleClass">
-            Something went wrong.<br><span class="text-purple">Let's try again.</span>
+            Something<br><span class="text-purple">went wrong</span>
           </h1>
           <p class="mt-5 max-w-[360px] text-[16px] leading-[1.75] text-muted to-700:mx-auto">
             {{ isNotFound
-              ? "We couldn't find the page you're looking for. Let's get you back to your numbers."
-              : "We couldn't load this page. Head back to the calculator and give it another try." }}
+              ? 'The link may be old or mistyped. The calculator is on the home page.'
+              : 'The page failed to load. Try again, or go back to the calculator.' }}
           </p>
           <a href="/" class="transition-control focus-ring mt-7 flex min-h-[49px] w-fit max-w-full items-center justify-center gap-4 rounded-[9px] border border-[#ae83ff66] bg-[#8354db] px-[17px] py-3 text-[14px] font-semibold text-white no-underline [box-shadow:0_4px_20px_#7f4ddd20] hover:bg-[#895add] hover:[box-shadow:0_4px_25px_#8f60f039] active:translate-y-px to-700:mx-auto" @click.prevent="returnToCalculator">
             <AppIcon name="chart" class="h-[17px] w-[17px] shrink-0" />
             <span class="mr-auto">Back to calculator</span>
             <AppIcon name="arrow" class="ml-auto h-[17px] w-[17px] shrink-0" />
           </a>
-          <p v-if="isNotFound" class="mt-[18px] text-[12px] leading-[1.7] text-dim">
-            You can also double-check the address for a typo.
-          </p>
         </div>
       </section>
     </main>
