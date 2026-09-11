@@ -228,6 +228,7 @@ onBeforeUnmount(() => priceRequest?.abort())
       :market="market"
       :btc-price="Number(btcPrice)"
       :price-label="priceLabel"
+      :price-is-payout-rate="priceStatus === 'gomining'"
       :live="marketStatus === 'live'"
     />
 

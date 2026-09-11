@@ -2,7 +2,8 @@
 import { useInvest } from '~/composables/useInvest'
 import type { MarketData } from '~/data/gomining'
 
-const props = defineProps<{ market: MarketData, btcPrice: number, priceLabel: string, live: boolean }>()
+// `priceIsPayoutRate` is true when the price shown is GoMining's own payout rate, so the tile need not quote it twice.
+const props = defineProps<{ market: MarketData, btcPrice: number, priceLabel: string, priceIsPayoutRate: boolean, live: boolean }>()
 const { energyBonus, maxEfficiency } = useInvest(() => props.market)
 
 const money = (value: number, digits = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)
@@ -74,7 +75,7 @@ const listCode = 'block font-[ui-monospace,SFMono-Regular,Menlo,monospace] text-
         <span class="block text-[12px] text-muted">Bitcoin price</span>
         <strong :class="tileValue">{{ money(btcPrice) }}</strong>
         <p :class="tileText">
-          {{ priceLabel }}. GoMining used {{ money(market.btcPriceUsd) }} per BTC for its payout.
+          {{ priceLabel }}.<span v-if="!priceIsPayoutRate"> GoMining used {{ money(market.btcPriceUsd) }} per BTC for its payout.</span>
         </p>
       </article>
       <article class="min-w-0 rounded-xl border border-border bg-[#0f111a80] px-[17px] py-[15px]">

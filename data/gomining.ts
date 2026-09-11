@@ -5,9 +5,9 @@
 //   GET  https://api.gomining.com/api/nft-collection/find-all-generative  miners GoMining sells, with prices
 //   POST https://api.gomining.com/api/nft/get-upgrade-rate                the W/TH step tables
 //
-// Miner prices combine the price ladders GoMining publishes with the per-W/TH valuation steps from
-// get-upgrade-rate; composables/useInvest.ts combines them. Keep every input fetched: primary-market data only,
-// no hardcoded or fitted values.
+// Miner prices come from the price ladders GoMining publishes and the per-W/TH valuation steps from
+// get-upgrade-rate, put together in composables/useInvest.ts. Every price and rate must come from these
+// responses: primary-market data only, nothing hardcoded or fitted.
 // `gomining-snapshot.json` stores the last raw responses and is the fallback when the API is unreachable.
 // Refresh it with: docker compose exec -T dashboard yarn update-snapshot
 import raw from './gomining-snapshot.json'
