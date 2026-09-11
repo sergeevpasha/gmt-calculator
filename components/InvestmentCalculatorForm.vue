@@ -5,14 +5,13 @@ import type { MarketData } from '~/data/gomining'
 
 // `reward` is null while its field is empty, which is not the same as a reward of zero.
 const props = defineProps<{ btcPrice: number, reward: number | null, market: MarketData }>()
-const { bestOption, minerPrice, minEfficiency, maxEfficiency } = useInvest(() => props.market)
+const { bestOption, cheapestTerahash, minEfficiency, maxEfficiency } = useInvest(() => props.market)
 const moneyToSpend = ref<number | ''>(1000)
 const userDiscount = ref<number | ''>(10)
 // 0 compares every efficiency level and picks the most profitable miner.
 const efficiency = ref(0)
 const efficiencyLevels = computed(() => Array.from({ length: maxEfficiency() - minEfficiency() + 1 }, (_, index) => minEfficiency() + index))
 const efficiencyOptions = computed(() => [{ value: 0, label: 'Most profitable for the budget' }, ...efficiencyLevels.value])
-const cheapestTerahash = computed(() => Math.min(...efficiencyLevels.value.map(level => minerPrice(1, level))))
 const result = ref<MiningEstimate | null>(null)
 const calculatedInvestment = ref(1000)
 const error = ref('')
@@ -33,7 +32,10 @@ function calculate () {
   }
   const estimate = bestOption(investment, props.btcPrice, props.reward, discount, efficiency.value)
   if (estimate.power === 0) {
-    error.value = `This budget is below the price of 1 TH ($${cheapestTerahash.value.toFixed(2)}). Increase it to see returns.`
+    const cheapest = cheapestTerahash(efficiency.value)
+    const price = `$${cheapest.price.toFixed(2)}`
+    const quote = efficiency.value ? `the price of 1 TH at ${cheapest.efficiency} W / TH (${price})` : `the cheapest 1 TH (${price} at ${cheapest.efficiency} W / TH)`
+    error.value = `This budget is below ${quote}. Increase it to see returns.`
     return
   }
   error.value = ''

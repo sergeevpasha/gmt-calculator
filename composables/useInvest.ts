@@ -188,6 +188,15 @@ export const useInvest = (getMarket: () => MarketData) => {
     return estimate(efficiency, power, userDiscount, satoshiReward, btcPrice)
   }
 
+  // The least bestOption can spend: 1 TH at `efficiency`, or at the cheapest level when an efficiency of 0 compares
+  // them all. A smaller budget buys nothing.
+  function cheapestTerahash (efficiency: number) {
+    const levels = efficiency ? [efficiency] : Array.from({ length: maxEfficiency() - minEfficiency() + 1 }, (_, index) => minEfficiency() + index)
+    return levels
+      .map(level => ({ efficiency: level, price: minerPrice(1, level) }))
+      .reduce((cheapest, option) => option.price < cheapest.price ? option : cheapest)
+  }
+
   // Finds the miner with the highest daily profit for the budget. An efficiency of 0 compares 12 to 20 W/TH.
   // Equal profits prefer the cheaper miner.
   function bestOption (moneyToSpend: number, btcPrice: number, satoshiReward: number, userDiscount: number, efficiency: number = 0): MiningEstimate {
@@ -221,5 +230,5 @@ export const useInvest = (getMarket: () => MarketData) => {
     }
   }
 
-  return { nftProfitCalculator, bestOption, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
+  return { nftProfitCalculator, bestOption, cheapestTerahash, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower }
 }

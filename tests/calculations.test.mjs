@@ -26,7 +26,7 @@ function loadModule (filename) {
 
 const { EFFICIENCY_RANGE, marketSnapshot, normalizeMarket, parseSnapshot } = loadModule('data/gomining')
 const { useInvest } = loadModule('composables/useInvest')
-const { nftProfitCalculator, bestOption, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
+const { nftProfitCalculator, bestOption, cheapestTerahash, minerPrice, priceAt, energyBonus, efficiencyUpgradeCost, upgradeOptions, publishedEfficiencies, minEfficiency, maxEfficiency, maxPower } = useInvest(() => marketSnapshot)
 const round = number => Number(number.toFixed(2))
 const BTC_PRICE = 78000
 const REWARD = marketSnapshot.rewardSatPerThDay
@@ -193,6 +193,17 @@ test('budgets below the first TH price do not fabricate a free miner', () => {
   assert.equal(result.price, 0)
   assert.equal(result.profit, 0)
   assert.equal(result.rateOfInvestment, 0)
+})
+
+test('the 1 TH price quoted for a small budget is where the search starts buying', () => {
+  const choices = [0, ...Array.from({ length: EFFICIENCY_RANGE.max - EFFICIENCY_RANGE.min + 1 }, (_, index) => EFFICIENCY_RANGE.min + index)]
+  for (const efficiency of choices) {
+    const cheapest = cheapestTerahash(efficiency)
+    assert.ok(efficiency === 0 || cheapest.efficiency === efficiency, `${efficiency} W/TH must quote its own price`)
+    assert.equal(cheapest.price, minerPrice(1, cheapest.efficiency))
+    assert.equal(bestOption(cheapest.price - 0.01, BTC_PRICE, REWARD, 10, efficiency).power, 0)
+    assert.equal(bestOption(cheapest.price, BTC_PRICE, REWARD, 10, efficiency).power, 1)
+  }
 })
 
 test('a full maintenance discount removes both operating fees', () => {
