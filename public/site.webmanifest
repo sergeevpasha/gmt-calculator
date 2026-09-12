@@ -1,6 +1,11 @@
 {
+    "id": "/",
     "name": "GMT Calculator",
     "short_name": "GMT Calculator",
+    "description": "Estimate daily profit, ROI and payback for a GoMining miner from GoMining's live payout, fees and prices.",
+    "lang": "en",
+    "start_url": "/",
+    "scope": "/",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",

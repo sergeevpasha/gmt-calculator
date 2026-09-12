@@ -1,0 +1,6 @@
+# Everything on this site is public. gmt.guru is the address to index: the project's .vercel.app
+# aliases serve the same pages and answer with X-Robots-Tag: noindex.
+User-agent: *
+Allow: /
+
+Sitemap: https://gmt.guru/sitemap.xml

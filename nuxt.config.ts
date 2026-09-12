@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { SHARE_IMAGE_ALT, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from './data/site'
+
 export default defineNuxtConfig({
   // `nuxt dev` and `nuxt build` both default to .nuxt, so a build launched while
   // the dev server is running overwrites the manifests underneath it. Let the
@@ -18,17 +20,30 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'GoMining profit calculator · GMT Calculator',
-      htmlAttrs: { class: 'min-w-[320px] scroll-smooth [color-scheme:dark] motion-reduce:scroll-auto' },
+      title: SITE_TITLE,
+      htmlAttrs: { lang: 'en', class: 'min-w-[320px] scroll-smooth [color-scheme:dark] motion-reduce:scroll-auto' },
       bodyAttrs: { class: 'bg-bg text-[16px] text-text [-webkit-font-smoothing:antialiased]' },
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        {
-          name: 'description',
-          content: "Estimate daily profit, ROI and payback for a GoMining miner from GoMining's live payout, fees and prices, including what efficiency upgrades cost."
-        },
-        { name: 'theme-color', content: '#0c0e15' }
+        { name: 'description', content: SITE_DESCRIPTION },
+        { name: 'theme-color', content: '#0c0e15' },
+        // What a link to the site looks like when it is shared. og:url and the canonical link differ
+        // per page, so app.vue adds those two; everything here is the same on every page.
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: SITE_NAME },
+        { property: 'og:locale', content: 'en_US' },
+        { property: 'og:title', content: SITE_TITLE },
+        { property: 'og:description', content: SITE_DESCRIPTION },
+        { property: 'og:image', content: `${SITE_URL}/og-image.png` },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: SHARE_IMAGE_ALT },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: SITE_TITLE },
+        { name: 'twitter:description', content: SITE_DESCRIPTION },
+        { name: 'twitter:image', content: `${SITE_URL}/og-image.png` },
+        { name: 'twitter:image:alt', content: SHARE_IMAGE_ALT }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

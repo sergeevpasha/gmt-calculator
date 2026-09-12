@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { marketSnapshot } from '~/data/gomining'
+import { APP_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '~/data/site'
 import { isRecord } from '~/utils/isRecord'
 
 const { market, status: marketStatus, pending: marketPending, refresh: refreshMarket } = useMarketData()
@@ -104,6 +105,39 @@ function switchTab (event: KeyboardEvent) {
   activeTab.value = event.key === 'Home' ? 'investment' : event.key === 'End' ? 'nft' : activeTab.value === 'investment' ? 'nft' : 'investment'
   nextTick(() => document.getElementById(`${activeTab.value}-tab`)?.focus())
 }
+
+// What this page is, in the vocabulary search engines read. Only what the page actually offers: no
+// ratings, no prices, nothing that cannot be checked on the page itself.
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebSite',
+          '@id': `${SITE_URL}/#website`,
+          url: `${SITE_URL}/`,
+          name: SITE_NAME,
+          description: SITE_DESCRIPTION,
+          inLanguage: 'en'
+        },
+        {
+          '@type': 'WebApplication',
+          '@id': `${SITE_URL}/#calculator`,
+          url: `${SITE_URL}/`,
+          name: APP_NAME,
+          description: SITE_DESCRIPTION,
+          applicationCategory: 'FinanceApplication',
+          operatingSystem: 'Any',
+          isAccessibleForFree: true,
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          isPartOf: { '@id': `${SITE_URL}/#website` }
+        }
+      ]
+    })
+  }]
+})
 
 onMounted(refreshAll)
 onBeforeUnmount(() => priceRequest?.abort())
