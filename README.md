@@ -32,6 +32,8 @@ The container runs Node 24, the same major the Vercel project is set to build wi
 
 ## Branding
 
+The two webfonts are self-hosted: `public/fonts` holds the same variable woff2 subsets Google serves for DM Sans and Manrope, declared as `@font-face` in `tailwind.config.js` and preloaded in `nuxt.config.ts`, with their OFL licences beside them. Google's stylesheet used to be the page's only render-blocking request, worth about 1.8 s of first paint on mobile in PageSpeed Insights.
+
 `public/logo.svg` is the master logomark (the `₿=` mark). The favicons, touch icons and Windows tiles in `public/` are rendered from it, and `components/svg/AppLogo.vue` inlines the same paths for the header.
 
 ## Data sources

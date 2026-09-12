@@ -46,9 +46,11 @@ export default defineNuxtConfig({
         { name: 'twitter:image:alt', content: SHARE_IMAGE_ALT }
       ],
       link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap' },
+        // The faces are declared in tailwind.config.js and served from public/fonts; these two are
+        // the latin subsets every page needs, fetched in parallel with the stylesheet rather than
+        // after the browser has parsed it.
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/dm-sans-latin.woff2', crossorigin: '' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/manrope-latin.woff2', crossorigin: '' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
