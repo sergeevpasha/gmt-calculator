@@ -73,7 +73,11 @@ export default defineNuxtConfig({
     'nuxt-gtag'
   ],
   gtag: {
-    id: 'G-R2TWYZL9MC'
+    id: 'G-R2TWYZL9MC',
+    // Nothing on the page needs analytics, and gtag.js costs about 400 ms of main-thread time on a
+    // mid-range phone. Holding the script back until the browser is idle keeps it out of the page's
+    // blocking time; plugins/analytics.client.ts starts it. See the comment there.
+    initialConsent: false
   },
   eslint: {
     lintOnStart: false
